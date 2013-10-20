@@ -7,13 +7,13 @@ object ApplicationBuild extends Build with PlayReloader with PlayCommands with P
 
   val appName           = "rearview"
   val appVersion        = "2.0"
-  val scalaVersion      = "2.10.0"
+  val scalaVersion      = "2.10.3"
 
   val appDependencies = Seq(
     "commons-io"                    %  "commons-io"                  % "2.4",
-    "com.typesafe.slick"            %% "slick"                       % "1.0.0",
-    "com.typesafe.akka"             %% "akka-agent"                  % "2.1.0",
-    "com.typesafe.akka"             %% "akka-cluster-experimental"   % "2.1.0",
+    "com.typesafe.slick"            %% "slick"                       % "1.0.1",
+    "com.typesafe.akka"             %% "akka-agent"                  % "2.2.1",
+    "com.typesafe.akka"             %% "akka-cluster"                % "2.2.1",
     "com.typesafe.play.plugins"     %% "play-statsd"                 % "2.1.0",
     "commons-validator"             %  "commons-validator"           % "1.4.0",
     "javolution"                    %  "javolution"                  % "5.5.1",
@@ -21,13 +21,11 @@ object ApplicationBuild extends Build with PlayReloader with PlayCommands with P
     "org.apache.commons"            %  "commons-email"               % "1.2",
     "org.apache.commons"            %  "commons-math"                % "2.2",
     "org.quartz-scheduler"          %  "quartz"                      % "2.1.3",
-    "play"                          %% "anorm"                       % "2.1.1",
-    "play"                          %% "play-jdbc"                   % "2.1.1"
+    "play"                          %% "play"                        % "2.1.5",
+    "play"                          %% "play-jdbc"                   % "2.1.5"
   )
 
-  val rearviewJvmParams = List("-Djava.security.manager",
-                               "-Djava.security.policy=security.policy",
-                               "-Dsun.net.inetaddr.ttl=5",
+  val rearviewJvmParams = List("-Dsun.net.inetaddr.ttl=5",
                                "-Dsun.net.inetaddr.negative.ttl=0",
                                "-Dfile.encoding=UTF-8")
 
@@ -42,9 +40,9 @@ object ApplicationBuild extends Build with PlayReloader with PlayCommands with P
     "./scripts/create_db.sh" !
   }
 
-  Option(playRunCommand.getClass.getDeclaredField("name")) map { field =>
+  Option(playCommand.getClass.getDeclaredField("name")) map { field =>
     field.setAccessible(true)
-    field.set(playRunCommand, "play-run")
+    field.set(playCommand, "play-run")
   }
 
   Option(playStartCommand.getClass.getDeclaredField("name")) map { field =>
@@ -77,6 +75,6 @@ object ApplicationBuild extends Build with PlayReloader with PlayCommands with P
     javaOptions ++= rearviewJvmParams,
     javaOptions in test ++= rearviewJvmParams :+ "-Dakka.loglevel=warning",
     test in Test <<= (test in Test).dependsOn(createTestDb),
-    commands ++= Seq(playRunCommand, playStartCommand, preRunCommand, preStartCommand)
+    commands ++= Seq(playCommand, playStartCommand, preRunCommand, preStartCommand)
   )
 }

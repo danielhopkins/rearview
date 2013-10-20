@@ -2,7 +2,6 @@ package rearview.job
 
 import akka.actor.ActorSystem
 import akka.agent.Agent
-import akka.dispatch.ExecutionContexts.global
 import akka.util.Timeout
 import java.util.concurrent.TimeUnit
 import org.joda.time.DateTime
@@ -39,6 +38,7 @@ import play.api.test.FakeApplication
 import play.api.test.FakeHeaders
 import rearview.model.Application
 import rearview.model.Job
+import scala.concurrent.ExecutionContext.Implicits.global
 import play.api.libs.json.JsObject
 import rearview.alert.{EmailClient, EmailAlert, PagerDutyHttpClient, PagerDutyAlert}
 
@@ -88,7 +88,6 @@ class SchedulerSpec extends Specification with FutureMatchers with JobsControlle
   lazy val pagerDutyResult = Agent[JsValue](JsNull)
   lazy val emailResult     = Agent[Option[String]](None)
 
-  implicit lazy val globalContext = global()
   implicit lazy val futureTimeouts: FutureTimeouts = FutureTimeouts(10, 1000L millis)
   implicit lazy val akkaTimeout = Timeout(scala.concurrent.duration.Duration(60, TimeUnit.SECONDS))
 
