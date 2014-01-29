@@ -1,1 +1,2 @@
+mkdir -p /opt/rearview/logs
 chown -R app:devel /opt/rearview

@@ -1,3 +1,5 @@
 #!/usr/bin/env sh
 
-exec java $@ -cp "`dirname $0`/lib/*" play.core.server.NettyServer `dirname $0`/..
+cd `dirname $0`
+
+exec java -Dpidfile.path=/dev/null $@ -cp "`dirname $0`/lib/*" play.core.server.NettyServer `dirname $0`/..
