@@ -1,5 +1,10 @@
-#!/usr/bin/env sh
+#!/bin/bash
 
 cd `dirname $0`
 
-exec java -Dpidfile.path=/dev/null $@ -cp "`dirname $0`/lib/*" play.core.server.NettyServer `dirname $0`/..
+# Optional override for passing additional params. Set REARVIEW_PARAMS to pass thru JVM params
+if [ -a ./overrides.sh ]; then
+    source ./overrides.sh
+fi
+
+exec java -Dpidfile.path=/dev/null $REARVIEW_PARAMS $@ -cp "`dirname $0`/lib/*" play.core.server.NettyServer `dirname $0`/..
