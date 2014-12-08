@@ -10,7 +10,7 @@ Monitors define the following attributes:
  1. One or more Graphite metrics.
  1. Crontab time specification.
  1. Optional Ruby expression.  If no custom graph calls are made a default graph is generated.
- 1. Optional PagerDuty api keys and/or emails.
+ 1. Optional alerting service api keys and/or emails.
 
 The monitor workflow is as follows:
 
@@ -27,7 +27,7 @@ The monitor workflow is as follows:
  1. Metric data is transformed into data structures for Ruby
  1. MRI SAFE mode processes are forked to execute the logic
  1. Monitor optionally raises an exception to indicate a failure based on the data
- 1. Any configured PagerDuty or Email alerts are sent
+ 1. Any configured alerting service or Email alerts are sent
  1. Job is re-scheduled
 
 
@@ -141,7 +141,7 @@ UI output field.  Using *puts* is a handy way to debug the data initially and de
 the data and so on.
 
 Lastly, a monitor generates an alert by simply raising an exception with whatever text it wants to
-appear in an email or PagerDuty alert.
+appear in an email or alerting service alert.
 
 The following are the variables provided implicitly to a monitor:
 
