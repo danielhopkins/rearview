@@ -4,15 +4,38 @@
         <form id='namePagerForm' class='clearfix'>
             <fieldset class='monitor-name control-group'>
                 <label for='monitorName' class='control-label'>Monitor Name:</label>
-                    <input type='text' id='monitorName' name='monitorName' required='required' />
+                    <input type='text' id='monitorName' name='monitorName' class='form-control input-lg' required='required' />
             </fieldset>
             <fieldset class='description control-group'>
                 <label for='description' class='control-label'>Monitor Description (Not Required):</label>
-                <textarea rows='3' id='description' name='description'></textarea>
+                <textarea class='form-control input-lg' id='description' name='description'></textarea>
             </fieldset>
-            <fieldset class='pager-duty control-group'>
-                <label for='pagerDuty' class='control-label'>Add PagerDuty Keys or Email Addresses (Not Required):</label>
-                <textarea rows='3' id='pagerDuty' name='pagerDuty' placeholder='Multiple keys and/or email addresses can be entered (separated by a space, comma or new line).'></textarea>
+
+        </form>
+    </div>
+    <div class='hero-unit'>
+        <form class='clearfix'>
+            <fieldset class='monitor-name control-group'>
+                <label for='integration-key' class='control-label'>Integration type:</label>
+                <select id='integration-key' name='integration-key' class="input-lg">
+                    <option value='victorops-key'>VictorOps Key</option>
+                    <option value='pagerduty-key'>PagerDuty Key</option>
+                    <option value='email-address'>Email Address</option>
+                </select>
+            </fieldset>
+            <fieldset class='monitor-name control-group'>
+                <label for='integration-value' class='control-label sr-only'>Key or email address:</label>
+                <input id='integration-value' type='text' class="input-lg" />
+            </fieldset>
+            <fieldset class='monitor-key-list control-group'>
+                <!-- TODO: list the stored keys/addresses here -->
+                <table class="integrations-list">
+                    <tbody>
+                        <tr><td>VictorOps API Key:</td><td>01234567890</td><td>X</td></tr>
+                        <tr><td>PagerDuty API Key:</td><td>01234567890</td><td>X</td></tr>
+                        <tr><td>Email Address:</td><td>watchme@domain.tld</td><td>X</td></tr>
+                    </tbody>
+                </table>
             </fieldset>
         </form>
     </div>
