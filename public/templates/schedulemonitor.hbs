@@ -27,13 +27,16 @@
                 <label for='integration-value' class='control-label sr-only'>Key or email address:</label>
                 <input id='integration-value' type='text' class="input-lg" />
             </fieldset>
+            <fieldset class="integration-add-control">
+                <a href="#" class="integration-add">+Add</a>
+            </fieldset>
             <fieldset class='monitor-key-list control-group'>
                 <!-- TODO: list the stored keys/addresses here -->
                 <table class="integrations-list">
                     <tbody>
-                        <tr><td>VictorOps API Key:</td><td>01234567890</td><td>X</td></tr>
-                        <tr><td>PagerDuty API Key:</td><td>01234567890</td><td>X</td></tr>
-                        <tr><td>Email Address:</td><td>watchme@domain.tld</td><td>X</td></tr>
+                        {{#each alertKeys}}
+                            <tr><td>{{label}}</td><td>{{value}}</td><td class="integration-delete"><a href=#">X</a></td></tr>
+                        {{/each}}
                     </tbody>
                 </table>
             </fieldset>

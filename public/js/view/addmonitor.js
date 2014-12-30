@@ -5,6 +5,7 @@ define([
     'handlebars',
     'view/base',
     'model/job',
+    'collection/alertKeys',
     'codemirror',
     'xdate',
     'codemirror-ruby',
@@ -18,6 +19,7 @@ define([
     Handlebars,
     BaseView,
     JobModel,
+    AlertKeys,
     CodeMirror
 ){
 
@@ -35,7 +37,9 @@ define([
             'click .saveFinish'   : 'saveFinish',
             'click .back'         : 'exitFullScreen',
             'hide #addMonitor'    : 'modalClose',
-            'show #addMonitor'    : 'modalShow'
+            'show #addMonitor'    : 'modalShow',
+            'click table.integrations-list td.integration-delete': 'removeIntegration',
+            'click a.integration-add': 'addIntegration'
         },
 
         initialize : function(options) {
@@ -51,7 +55,22 @@ define([
 
             // Add the event listener
             $(window).resize(resize);
+            
+            self.alertKeys = new AlertKeys([
+                {id: 1, type: 'PagerDonkey', label: 'PagerDonkey API Key:', value: '01234567890'},
+                {id: 2, type: 'VictorOps', label: 'VictorOps API Key:', value: 'abcdef09876543221'},
+                {id: 3, type: 'Email', label: 'Email Address:', value: 'look@me.com'}                                
+            ]);
 
+            self.alertKeys.on('change add remove', function() {
+                self.templar.render({
+                    path : 'schedulemonitor',
+                    el   : self.$el.find('.content-wrap'),
+                    data : {
+                        alertKeys: self.alertKeys.toJSON()                    
+                    }
+                });
+            });
 
             self.render();
         },
@@ -70,7 +89,9 @@ define([
             self.templar.render({
                 path : 'schedulemonitor',
                 el   : self.$el.find('.content-wrap'),
-                data : {}
+                data : {
+                    alertKeys: self.alertKeys.toJSON()                    
+                }
             });
 
             self.scheduleViewInitialized = true;
@@ -337,6 +358,34 @@ define([
             var self = this;
             return _.debounce(self.adjustModalLayout, 500);
         },
+        
+        /**
+         * AddMonitorView#removeIntegration()
+         */
+        removeIntegration: function(e) {
+            e.preventDefault();
+            var model = this.alertKeys.at($(e.currentTarget).parent().index());
+            this.alertKeys.remove(model);
+        },
+        
+        /**
+         * AddMonitorView#addIntegration()
+         */
+        addIntegration: function(e) {
+            e.preventDefault();
+            var types = {
+                'email-address': 'Email Address:',
+                'pagerduty-key': 'PagerDuty API Key:',
+                'victorops-key': 'VictorOps API Key:'
+            };
+            this.alertKeys.add(
+                {
+                    type_id: $('#integration-key').val(),
+                    value: $('#integration-value').val(),
+                    label: types[$('#integration-key').val()]
+                }    
+            );
+        },
 
         /*
          * PSEUDO-PRIVATE METHODS (internal)
@@ -355,7 +404,7 @@ define([
                 'userId'        : self.user.get('id'),
                 'name'          : self.$el.find('#monitorName').val(),
                 'description'   : self.$el.find('#description').val(),
-                'alertKeys'     : self.parseAlertKeys( self.$el.find('#pagerDuty').val() ),
+                'alertKeys'     : self.alertKeys.toJSON(),
                 'cronExpr'      : self._createCronExpr()
             });
         },

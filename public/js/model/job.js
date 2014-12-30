@@ -21,7 +21,7 @@ function(
     //     "userId"        : 1,
     //     "name"          : "test",
     //     "jobType"       : "monitor",
-    //     "alertKeys"     : [""],
+    //     "alertKeys"     : [{alertKey Model}, {alertKey Model}, ...],
     //     "cronExpr"      : "0 * * * * ?",
     //     "errorTimeout"  : 60,
     //     "minutes"       : 1,
