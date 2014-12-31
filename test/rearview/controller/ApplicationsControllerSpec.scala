@@ -1,27 +1,20 @@
 package rearview.controller
 
-import org.junit.runner.RunWith
-import org.specs2.execute.AsResult
-import org.specs2.runner.JUnitRunner
-import org.specs2.specification.AroundOutside
-import org.specs2.execute.Result
+import org.specs2.execute.{AsResult, Result}
 import org.specs2.mutable.Specification
-import play.api.test.FakeRequest
-import play.api.libs.json._
+import org.specs2.specification.AroundOutside
+import play.api.libs.json.{JsNumber, JsObject, JsString, _}
+import play.api.test.{FakeApplication, FakeRequest}
 import play.api.test.Helpers._
-import play.api.libs.json.JsString
-import play.api.libs.json.JsNumber
-import play.api.test.FakeApplication
-import play.api.libs.json.JsObject
 import rearview.Global.database
-import rearview.model.{Job, User}
 import rearview.dao.{JobDAO, UserDAO}
-import scala.slick.session.Session
-import scala.slick.jdbc.{StaticQuery => Q}
 import rearview.job.Scheduler
-import concurrent.Future
+import rearview.model.{Job, User}
 
-@RunWith(classOf[JUnitRunner])
+import scala.concurrent.Future
+import scala.slick.jdbc.{StaticQuery => Q}
+import scala.slick.session.Session
+
 class ApplicationsControllerSpec extends Specification with ApplicationsController {
 
   sequential

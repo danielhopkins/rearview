@@ -1,13 +1,9 @@
 package rearview.model
 
-import rearview.model.ModelImplicits._
-import org.junit.runner.RunWith
 import org.specs2.mutable.Specification
-import org.specs2.runner.JUnitRunner
 import play.api.libs.json._
-import scala.util.Try
+import rearview.model.ModelImplicits._
 
-@RunWith(classOf[JUnitRunner])
 class ModelSpec extends Specification {
 
    val jobJSON = Json.obj(
@@ -35,14 +31,14 @@ class ModelSpec extends Specification {
        val json   = jobJSON + ("alertKeys" -> JsArray(List(JsString("a"), JsString("b"))))
        val result = jobFormat.reads(json).asOpt
        result must beSome
-       result.get.alertKeys.map(_.toSeq) must beSome(Seq("a", "b"))
+       result.get.alertKeys must_== Some(List("a", "b"))
     }
 
     "filter empty pager duty keys" in {
        val json   = jobJSON + ("alertKeys" -> JsArray(List(JsString(""), JsString(""))))
        val result = jobFormat.reads(json).asOpt
        result must beSome
-       result.get.alertKeys.map(_.toSeq) must beNone
+       result.get.alertKeys must beNone
     }
   }
 

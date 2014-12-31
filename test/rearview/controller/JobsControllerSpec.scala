@@ -1,36 +1,26 @@
 package rearview.controller
 
-import org.junit.runner.RunWith
-import org.specs2.execute.Result
-import org.specs2.execute.AsResult
+import org.specs2.execute.{AsResult, Result}
 import org.specs2.mutable.Specification
-import org.specs2.runner.JUnitRunner
 import org.specs2.specification.AroundOutside
-import play.api.libs.json.Reads.LongReads
-import play.api.libs.json.Reads.StringReads
-import play.api.libs.json._
+import play.api.libs.json.Reads.{LongReads, StringReads}
+import play.api.libs.json.{JsArray, JsNumber, JsObject, JsString, _}
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.Helpers._
 import play.api.test._
-import play.api.libs.json.JsArray
-import play.api.libs.json.JsString
-import play.api.libs.json.JsNumber
-import play.api.libs.json.JsObject
-import rearview.model.User
-import rearview.model.ModelImplicits._
+import rearview.Global.database
 import rearview.dao.{ApplicationDAO, JobDAO, UserDAO}
-import rearview.graphite.{MockGraphiteClient, GraphiteParser, ConfigurableHttpClient, GraphiteResponse}
+import rearview.graphite.{ConfigurableHttpClient, GraphiteParser, GraphiteResponse, MockGraphiteClient}
 import rearview.job.Scheduler
-import rearview.Global.{database, slickDriver}
-import rearview.model.Application
-import rearview.model.Job
+import rearview.model.ModelImplicits._
+import rearview.model.{Application, Job, User}
+
 import scala.concurrent.Future
 import scala.io.Source
-import scala.slick.session.Session
 import scala.slick.jdbc.{StaticQuery => Q}
+import scala.slick.session.Session
 
 
-@RunWith(classOf[JUnitRunner])
 class JobsControllerSpec extends Specification with JobsController { self =>
 
   sequential

@@ -1,14 +1,9 @@
 package rearview.graphite
 
-import scala.io.Source
-
-import org.junit.runner.RunWith
-import org.specs2.runner.JUnitRunner
 import org.specs2.mutable.Specification
 
-import play.api.libs.json.Json
+import scala.io.Source
 
-@RunWith(classOf[JUnitRunner])
 class GraphiteParserSpec extends Specification {
 
   lazy val artifact   = Source.fromFile("test/test.dat").getLines.reduceLeft(_ + "\n" + _)

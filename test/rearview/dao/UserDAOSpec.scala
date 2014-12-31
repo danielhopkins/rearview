@@ -1,19 +1,17 @@
 package rearview.dao
 
-import org.junit.runner.RunWith
 import org.specs2.execute.AsResult
 import org.specs2.mutable.Specification
 import org.specs2.specification.AroundExample
-import org.specs2.runner.JUnitRunner
 import play.api.test.FakeApplication
 import play.api.test.Helpers.running
 import rearview.Global.database
 import rearview.model.User
+
 import scala.slick.jdbc.{StaticQuery => Q}
 import scala.slick.session.Session
 
 
-@RunWith(classOf[JUnitRunner])
 class UserDAOSpec extends Specification with AroundExample {
 
   sequential

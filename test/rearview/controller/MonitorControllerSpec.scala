@@ -1,33 +1,21 @@
 package rearview.controller
 
-import java.util.concurrent.TimeUnit
-import org.junit.runner.RunWith
-import org.specs2.execute.AsResult
-import org.specs2.execute.Result
+import org.specs2.execute.{AsResult, Result}
 import org.specs2.mutable.Specification
-import org.specs2.runner.JUnitRunner
-import org.specs2.specification.{AroundOutside, AroundExample}
-import play.api.db._
+import org.specs2.specification.AroundOutside
 import play.api.libs.json._
+import play.api.test.{FakeApplication, FakeHeaders, FakeRequest}
 import play.api.test.Helpers._
-import play.api.test.FakeApplication
-import play.api.test.FakeHeaders
-import play.api.test.FakeRequest
-import rearview.Global.{database, slickDriver}
-import rearview.model._
-import rearview.graphite.ConfigurableHttpClient
-import rearview.graphite.GraphiteResponse
-import rearview.graphite.MockGraphiteClient
+import rearview.Global.database
+import rearview.dao.{ApplicationDAO, UserDAO}
+import rearview.graphite.{GraphiteResponse, MockGraphiteClient}
 import rearview.model.ModelImplicits._
-import rearview.dao.UserDAO
-import rearview.model.User
-import rearview.dao.ApplicationDAO
-import rearview.model.Application
-import scala.io.Source
-import scala.slick.session.Session
-import scala.slick.jdbc.{StaticQuery => Q}
+import rearview.model.{Application, User, _}
 
-@RunWith(classOf[JUnitRunner])
+import scala.io.Source
+import scala.slick.jdbc.{StaticQuery => Q}
+import scala.slick.session.Session
+
 class MonitorControllerSpec extends Specification {
 
   sequential

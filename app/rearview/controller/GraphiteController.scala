@@ -16,12 +16,10 @@ object GraphiteController extends Controller with Security {
   def graphite(path: String) = Authenticated { implicit request =>
     val uri     = request.uri.replaceFirst("/graphite", "")
 
-    Async {
-      GraphiteProxy(Global.graphiteHost + uri, Global.graphiteAuth)(GraphiteProxy.defaultHandler _) map { response =>
-        response
-      } recover {
-        case e: Throwable => InternalServerError(e.getMessage)
-      }
+    GraphiteProxy(Global.graphiteHost + uri, Global.graphiteAuth)(GraphiteProxy.defaultHandler _) map { response =>
+      response
+    } recover {
+      case e: Throwable => InternalServerError(e.getMessage)
     }
   }
 }

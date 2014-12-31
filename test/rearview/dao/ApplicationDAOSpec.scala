@@ -1,20 +1,17 @@
 package rearview.dao
 
 import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException
-import org.junit.runner.RunWith
 import org.specs2.execute.AsResult
 import org.specs2.mutable.Specification
 import org.specs2.specification.AroundOutside
-import org.specs2.runner.JUnitRunner
 import play.api.test.FakeApplication
 import play.api.test.Helpers.running
 import rearview.Global.database
-import rearview.model.Application
-import rearview.model.User
+import rearview.model.{Application, User}
+
 import scala.slick.jdbc.{StaticQuery => Q}
 import scala.slick.session.Session
 
-@RunWith(classOf[JUnitRunner])
 class ApplicationDAOSpec extends Specification {
 
   sequential
