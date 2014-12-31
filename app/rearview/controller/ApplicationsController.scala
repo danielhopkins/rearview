@@ -9,6 +9,8 @@ import rearview.dao.{JobDAO, ApplicationDAO, UserDAO}
 import rearview.job.Scheduler
 import rearview.model.ModelImplicits._
 
+import scala.concurrent.Future
+
 trait ApplicationsController extends Controller with Security {
 
   def scheduler: Scheduler
@@ -16,15 +18,17 @@ trait ApplicationsController extends Controller with Security {
   protected def store(id: Option[Long] = None) = Authenticated[JsValue](BodyParsers.parse.tolerantJson) {  implicit request =>
     UserDAO.findByEmail(username.getOrElse(sys.error("empty session"))) map { user =>
       val update = applicationFormat.reads(request.body).get.copy(userId = user.id.get)
-      if(id.isDefined && id != update.id)
-        BadRequest("Id specified in request does not match id in posted object.")
-      else if(!id.isDefined && update.id.isDefined)
-        BadRequest("The posted object contained an id during a create.")
-      else ApplicationDAO.store(update) match {
-        case Some(update) => Ok(Json.toJson(update))
-        case None         => BadRequest
+      Future.successful {
+        if(id.isDefined && id != update.id)
+          BadRequest("Id specified in request does not match id in posted object.")
+        else if(!id.isDefined && update.id.isDefined)
+          BadRequest("The posted object contained an id during a create.")
+        else ApplicationDAO.store(update) match {
+          case Some(update) => Ok(Json.toJson(update))
+          case None         => BadRequest
+        }
       }
-    } getOrElse BadRequest("Invalid session.  Could not store application.")
+    } getOrElse Future.successful(BadRequest("Invalid session.  Could not store application."))
   }
 
 
@@ -45,24 +49,32 @@ trait ApplicationsController extends Controller with Security {
 
 
   def fetch(id: Long) = Authenticated { implicit request =>
-    ApplicationDAO.findById(id) match {
-      case Some(app) => Ok(Json.toJson(app))
-      case _         => NotFound
+    Future.successful {
+      ApplicationDAO.findById(id) match {
+        case Some(app) => Ok(Json.toJson(app))
+        case _         => NotFound
+      }
     }
   }
 
 
   def list = Authenticated { implicit request =>
-    Ok(Json.toJson(ApplicationDAO.list()))
+    Future.successful {
+      Ok(Json.toJson(ApplicationDAO.list()))
+    }
   }
 
 
   def listJobs(id: Long) = Authenticated { implicit request =>
-    Ok(Json.toJson(JobDAO.findByApplication(id)))
+    Future.successful {
+      Ok(Json.toJson(JobDAO.findByApplication(id)))
+    }
   }
 
   def listErrors(id: Long) = Authenticated { implicit request =>
-    Ok(Json.toJson(JobDAO.findErrorsByApplicationId(id)))
+    Future.successful{
+      Ok(Json.toJson(JobDAO.findErrorsByApplicationId(id)))
+    }
   }
 
 
@@ -71,7 +83,12 @@ trait ApplicationsController extends Controller with Security {
       job.id.map(scheduler.delete(_))
     }
     JobDAO.deleteByApplication(id)
-    if(ApplicationDAO.delete(id)) Ok else NotFound
+    Future.successful {
+      if(ApplicationDAO.delete(id))
+        Ok
+      else
+        NotFound
+    }
   }
 }
 

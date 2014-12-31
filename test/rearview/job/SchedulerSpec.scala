@@ -3,46 +3,28 @@ package rearview.job
 import akka.actor.ActorSystem
 import akka.agent.Agent
 import akka.util.Timeout
-import java.util.concurrent.TimeUnit
 import org.joda.time.DateTime
-import org.junit.runner.RunWith
 import org.specs2.execute.AsResult
 import org.specs2.mutable.Specification
-import org.specs2.runner.JUnitRunner
 import org.specs2.specification.AroundOutside
-import play.api.libs.json._
+import play.api.libs.json.{JsObject, JsString, _}
 import play.api.mvc.AnyContentAsEmpty
-import play.api.test.FakeApplication
-import play.api.test.FakeHeaders
-import play.api.test.FakeRequest
+import play.api.test.{FakeApplication, FakeHeaders, FakeRequest}
 import play.api.test.Helpers._
 import rearview.Global.database
+import rearview.alert.{EmailAlert, EmailClient, PagerDutyAlert, PagerDutyHttpClient}
 import rearview.controller.JobsController
-import rearview.dao.ApplicationDAO
-import rearview.dao.JobDAO
-import rearview.dao.UserDAO
-import rearview.graphite.GraphiteResponse
-import rearview.graphite.MockGraphiteClient
+import rearview.dao.{ApplicationDAO, JobDAO, UserDAO}
+import rearview.graphite.{GraphiteResponse, MockGraphiteClient}
 import rearview.model.ModelImplicits._
-import rearview.model._
+import rearview.model.{Application, Job, User, _}
 import rearview.util._
+
 import scala.concurrent.Future
 import scala.io.Source
 import scala.slick.jdbc.{StaticQuery => Q}
 import scala.slick.session.Session
-import rearview.graphite.GraphiteResponse
-import play.api.libs.json.JsString
-import scala.Some
-import rearview.model.User
-import play.api.test.FakeApplication
-import play.api.test.FakeHeaders
-import rearview.model.Application
-import rearview.model.Job
-import scala.concurrent.ExecutionContext.Implicits.global
-import play.api.libs.json.JsObject
-import rearview.alert.{EmailClient, EmailAlert, PagerDutyHttpClient, PagerDutyAlert}
 
-@RunWith(classOf[JUnitRunner])
 class SchedulerSpec extends Specification with FutureMatchers with JobsController { self =>
 
   sequential
@@ -89,7 +71,7 @@ class SchedulerSpec extends Specification with FutureMatchers with JobsControlle
   lazy val emailResult     = Agent[Option[String]](None)
 
   implicit lazy val futureTimeouts: FutureTimeouts = FutureTimeouts(10, 1000L millis)
-  implicit lazy val akkaTimeout = Timeout(scala.concurrent.duration.Duration(60, TimeUnit.SECONDS))
+//  implicit lazy val akkaTimeout = Timeout(scala.concurrent.duration.Duration(60, TimeUnit.SECONDS))
 
   case class TestContext(app: Application, user: User)
 
@@ -216,6 +198,7 @@ class SchedulerSpec extends Specification with FutureMatchers with JobsControlle
     "Add a job to the scheduler on /store" in testContext { implicit ctx: TestContext =>
       val json = Json.toJson(createJob("test"))
       val result = create()(FakeRequest(POST, "/jobs", FakeHeaders(), json).withSession(("username", ctx.user.email)))
+      implicitly[Timeout]
       status(result) === OK
 
       val job = Json.parse(contentAsString(result)).as[Job]

@@ -1,18 +1,12 @@
 package rearview.graphite
 
 import play.api.Logger
-import play.api.libs.concurrent.Promise
-import play.api.libs.concurrent.Redeemed
-import play.api.libs.concurrent.Thrown
 import play.api.libs.iteratee.Enumerator
 import play.api.libs.ws.WS
-import play.api.mvc.ResponseHeader
-import play.api.mvc.Result
-import play.api.mvc.Results.EmptyContent
-import play.api.mvc.Results.Ok
-import play.api.mvc.Results.Unauthorized
-import play.api.mvc.SimpleResult
-import scala.collection.JavaConversions.asScalaSet
+import play.api.mvc.Results.{EmptyContent, Ok, Unauthorized}
+import play.api.mvc.{ResponseHeader, Result, SimpleResult}
+import play.api.Play.current
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -26,7 +20,7 @@ trait ConfigurableHttpClient {
 
 class MockGraphiteClient(val response: GraphiteResponse) extends ConfigurableHttpClient {
   override def get(uri: String, headers: (String, String)*): Future[GraphiteResponse] = {
-    Promise.pure[GraphiteResponse](response)
+    Future.successful(response)
   }
 }
 
@@ -34,11 +28,11 @@ class MockGraphiteClient(val response: GraphiteResponse) extends ConfigurableHtt
 object LiveGraphiteClient extends ConfigurableHttpClient {
   def get(uri: String, headers: (String, String)*): Future[GraphiteResponse] = {
     WS.url(uri).withHeaders(headers:_*).get().map { r =>
-      val ahcHeaders = r.getAHCResponse.getHeaders()
+      val ahcHeaders = r.allHeaders
       val headers = ahcHeaders.keySet.foldLeft(Map[String, String]()) { (m, k) =>
-        m + (k -> ahcHeaders.getFirstValue(k))
+        m + (k -> ahcHeaders(k).headOption.getOrElse(""))
        }
-      GraphiteResponse(r.status, r.ahcResponse.getResponseBodyAsBytes(), headers)
+      GraphiteResponse(r.status, r.body.getBytes, headers)
     }
   }
 }
@@ -57,17 +51,17 @@ object GraphiteProxy {
     response.map { r =>
       r.status match {
         case Ok.header.status =>
-          new SimpleResult[Array[Byte]](Ok.header, Enumerator(r.body)).as(r.headers.get("Content-Type").getOrElse("text/plain"))
+          Result(Ok.header, Enumerator(r.body)).as(r.headers.get("Content-Type").getOrElse("text/plain"))
 
         case code @ Unauthorized.header.status =>
           val headers = r.headers.get("WWW-Authenticate").map(h => Map("WWW-Authenticate" -> h))
           val responseHeader = new ResponseHeader(code, headers.getOrElse(Map()))
-          new SimpleResult[EmptyContent](responseHeader, Enumerator())
+          Result(responseHeader, Enumerator())
 
         case code =>
           Logger.warn("Received " + code + " from Graphite")
           val responseHeader = new ResponseHeader(code, Map())
-          new SimpleResult[EmptyContent](responseHeader, Enumerator())
+          Result(responseHeader, Enumerator())
       }
     }
   }

@@ -31,28 +31,26 @@ trait JobsController extends Controller with Security {
    */
   def store(id: Option[Long] = None) = Authenticated[JsValue](BodyParsers.parse.tolerantJson) {  implicit request =>
     validateParams(id) match {
-      case Left(errorResult) => errorResult
+      case Left(errorResult) => Future.successful(errorResult)
       case Right(update) =>
-        Async {
-          val valid = if(update.active)
-            verifyJob(update)
-          else
-            Future(Right(true))
+        val valid = if(update.active)
+          verifyJob(update)
+        else
+          Future.successful(Right(true))
 
-          valid map { result =>
-            result match {
-              case Left(s)  => BadRequest(s)
-              case Right(j) =>
-                JobDAO.store(update) map { job =>
-                  scheduler.schedule(job)
-                  Ok(Json.toJson(job))
-                } getOrElse(InternalServerError("Failed to store job"))
-            }
-          } recover {
-            case e: Throwable =>
-              Logger.error("Failed to verify Job", e)
-              InternalServerError(e.getMessage)
+        valid map { result =>
+          result match {
+            case Left(s)  => BadRequest(s)
+            case Right(j) =>
+              JobDAO.store(update) map { job =>
+                scheduler.schedule(job)
+                Ok(Json.toJson(job))
+              } getOrElse(InternalServerError("Failed to store job"))
           }
+        } recover {
+          case e: Throwable =>
+            Logger.error("Failed to verify Job", e)
+            InternalServerError(e.getMessage)
         }
     }
   }
@@ -76,33 +74,41 @@ trait JobsController extends Controller with Security {
 
 
   def fetch(id: Long) = Authenticated { implicit request =>
-    JobDAO.findById(id) match {
-      case Some(job) => Ok(Json.toJson(job))
-      case _         => NotFound
+    Future.successful {
+      JobDAO.findById(id) match {
+        case Some(job) => Ok(Json.toJson(job))
+        case _         => NotFound
+      }
     }
   }
 
 
   def fetchData(id: Long) = Authenticated { implicit request =>
-    JobDAO.findData(id) match {
-      case Some(data) => Ok(Json.toJson(data))
-      case _          => NotFound
+    Future.successful {
+      JobDAO.findData(id) match {
+        case Some(data) => Ok(Json.toJson(data))
+        case _          => NotFound
+      }
     }
   }
 
 
   def list = Authenticated { implicit request =>
-    val jobs = JobDAO.list() map { job =>
-      val cronExpr = new CronExpression(job.cronExpr)
-      val nextRun  = cronExpr.getNextValidTimeAfter(new Date)
-      job.copy(nextRun = Some(nextRun))
+    Future.successful {
+      val jobs = JobDAO.list() map { job =>
+        val cronExpr = new CronExpression(job.cronExpr)
+        val nextRun  = cronExpr.getNextValidTimeAfter(new Date)
+        job.copy(nextRun = Some(nextRun))
+      }
+      Ok(Json.toJson(jobs))
     }
-    Ok(Json.toJson(jobs))
   }
 
 
   def listErrors(id: Long) = Authenticated { implicit request =>
-    Ok(Json.toJson(JobDAO.findErrorsByJobId(id)))
+    Future.successful {
+      Ok(Json.toJson(JobDAO.findErrorsByJobId(id)))
+    }
   }
 
 
@@ -111,7 +117,12 @@ trait JobsController extends Controller with Security {
    */
   def delete(id: Long, appId: Long = -1) = Authenticated { implicit request =>
     scheduler.delete(id)
-    if(JobDAO.delete(id)) Ok else NotFound
+    Future.successful {
+      if(JobDAO.delete(id))
+        Ok
+      else
+        NotFound
+    }
   }
 
 

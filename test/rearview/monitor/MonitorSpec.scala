@@ -1,21 +1,17 @@
 package rearview.monitor
 
-import java.util.concurrent.TimeUnit
-import org.junit.runner.RunWith
-import org.specs2.execute.Result
-import org.specs2.mutable.Specification
-import org.specs2.runner.JUnitRunner
-import org.specs2.specification.AroundExample
 import org.specs2.execute.AsResult
+import org.specs2.mutable.Specification
+import org.specs2.specification.AroundExample
 import play.api.libs.json._
-import play.api.test.Helpers.running
 import play.api.test.FakeApplication
+import play.api.test.Helpers.running
 import rearview.graphite._
 import rearview.model._
 import rearview.util.FutureMatchers
+
 import scala.io.Source
 
-@RunWith(classOf[JUnitRunner])
 class MonitorSpec extends Specification with AroundExample with FutureMatchers {
 
   sequential

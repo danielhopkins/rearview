@@ -11,6 +11,8 @@ import rearview.dao.UserDAO
 import rearview.model.ModelImplicits.userFormat
 import rearview.model.User
 
+import scala.concurrent.Future
+
 object MainController extends Controller with Security with OpenIDLogin {
   val USER = "user"
 
@@ -19,12 +21,16 @@ object MainController extends Controller with Security with OpenIDLogin {
 
 
   def index = Authenticated { implicit request =>
-    Ok(views.html.index(Global.uiVersion))
+    Future.successful {
+      Ok(views.html.index(Global.uiVersion))
+    }
   }
 
 
   def user = Authenticated { implicit request =>
-    Ok(request.session(USER))
+    Future.successful {
+      Ok(request.session(USER))
+    }
   }
 
 
@@ -38,7 +44,9 @@ object MainController extends Controller with Security with OpenIDLogin {
   }
 
   def test = Authenticated { implicit request =>
-    Ok(views.html.test())
+    Future.successful {
+      Ok(views.html.test())
+    }
   }
 
 

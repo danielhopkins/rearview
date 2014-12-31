@@ -7,6 +7,7 @@ import play.api.libs.json.JsString
 import play.api.libs.json.JsValue
 import play.api.libs.json.Json
 import play.api.libs.ws.WS
+import play.api.Play.current
 import rearview.Global
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -93,7 +94,7 @@ class LivePagerDutyAlert extends PagerDutyAlert {
       Logger.debug(s"Posting PagerDuty to $uri")
       WS.url(uri).post(payload) map { r =>
         Logger.debug(s"Received ${r.status}")
-        val status = (Json.parse(new String((r.ahcResponse.getResponseBodyAsBytes))) \ "status").as[String]
+        val status = (r.json \ "status").as[String]
         r.status == 200 && status == "success"
       } recover {
         case e: Throwable =>

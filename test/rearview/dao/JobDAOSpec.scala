@@ -1,24 +1,20 @@
 package rearview.dao
 
 import java.util.Date
-import org.junit.runner.RunWith
+
 import org.joda.time._
 import org.specs2.execute._
+import org.specs2.matcher.MatchersImplicits
 import org.specs2.mutable._
 import org.specs2.specification.AroundOutside
-import org.specs2.runner.JUnitRunner
-import org.specs2.matcher.{MatchResult, MatchersImplicits}
-import play.api.Play.current
-import play.api.Logger
+import play.api.libs.json._
 import play.api.test.Helpers._
 import play.api.test._
-import play.api.libs.json._
 import rearview.Global.{database, slickDriver}
 import rearview.model._
-import scala.slick.session.Session
+
 import scala.slick.jdbc.{StaticQuery => Q}
 
-@RunWith(classOf[JUnitRunner])
 class JobDAOSpec extends Specification with MatchersImplicits {
 
   sequential
@@ -39,7 +35,7 @@ class JobDAOSpec extends Specification with MatchersImplicits {
     }
 
     def around[R : AsResult](r: => R): Result = {
-      import slickDriver.simple._
+      import rearview.Global.slickDriver.simple._
       running(application) {
         database withSession { implicit session: Session =>
           (Q.u + "delete from users").execute()

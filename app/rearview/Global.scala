@@ -2,6 +2,7 @@ package rearview
 
 import scala.Array.canBuildFrom
 import scala.collection.JavaConversions._
+import scala.concurrent.Future
 import scala.slick.driver.ExtendedDriver
 import scala.slick.session.Database
 import play.api.Application
@@ -97,7 +98,7 @@ object Global extends WithFilters(LoggingFilter) {
       case e: OpenIDError =>
         Logger.warn("Unauthorized OpenID attempt")
         implicit val flash = Flash(Map("auth-error" -> "We were unable to authenticate you, please try again."))
-        Forbidden(views.html.unauthorized())
+        Future.successful(Forbidden(views.html.unauthorized()))
 
       case _ => super.onError(request, ex)
     }
