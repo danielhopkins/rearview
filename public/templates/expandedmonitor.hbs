@@ -56,6 +56,11 @@
                     <i class='icon-time'></i> View Schedule
                 </a>
             </li>
+            <li>
+                <a href="#viewIntegrations" data-toggle='tab' class='integrations-tab'>
+                    <i class='icon-plug'></i> View Integrations
+                </a>
+            </li>
         </ul>
         <div class='tab-content'>
             <div class='tab-pane active' id='viewMetrics'>
@@ -155,12 +160,8 @@
                     <label for='description' class='control-label'>Monitor Description (Not Required):</label>
                     <textarea rows='3' id='description' name='description'>{{monitor.description}}</textarea>
                 </fieldset>
-                <fieldset class='pager-duty control-group'>
-                    <label for='pagerDuty' class='control-label'>Add PagerDuty Keys or Email Addresses (Not Required):</label>
-<textarea rows='3' id='pagerDuty' name='pagerDuty' placeholder='Multiple keys and/or email addresses can be entered (separated by a space, comma or new line).'>{{#monitor.alertKeys}}{{this}}
-{{/monitor.alertKeys}}</textarea>
-                </fieldset>
             </div>
+            <div class="tab-pane" id="viewIntegrations"></div>
         </div>
         <div class='button-view clearfix'>
             <fieldset class='action-buttons' style='clear: both; width: 100%; margin: 0px auto;'>

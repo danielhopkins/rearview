@@ -1,0 +1,28 @@
+ <form class='clearfix'>
+     <fieldset class='monitor-name control-group'>
+         <label for='integration-key' class='control-label'>Integration type:</label>
+         <select id='integration-key' name='integration-key' class="input-lg">
+             <option value='victorops-key'>VictorOps Key</option>
+             <option value='pagerduty-key'>PagerDuty Key</option>
+             <option value='email-address'>Email Address</option>
+         </select>
+     </fieldset>
+     <fieldset class='monitor-name control-group'>
+         <label for='integration-value' class='control-label'>Key or email address:</label>
+         <input id='integration-value' type='text' class="input-lg" />
+         <span class="integration-add-control">
+             <a href="#" class="integration-add integration-control">+Add</a>
+         </span>
+     </fieldset>
+     
+     <fieldset class='monitor-key-list control-group'>
+         <!-- TODO: list the stored keys/addresses here -->
+         <table class="integrations-list">
+             <tbody>
+                 {{#each alertKeys}}
+                     <tr><td>{{label}}</td><td>{{value}}</td><td class="integration-delete"><a href=#" class="integration-control">X</a></td></tr>
+                 {{/each}}
+             </tbody>
+         </table>
+     </fieldset>
+ </form>

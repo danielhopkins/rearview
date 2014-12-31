@@ -6,6 +6,7 @@ define([
     'view/base',
     'view/deletemonitor',
     'model/job',
+    'collection/alertKeys',
     'highcharts',
     'highcharts-gray',
     'backbone-mediator',
@@ -18,12 +19,16 @@ define([
     BaseView,
     DeleteMonitorView,
     JobModel,
+    AlertKeys,
     HighChart
 ){
     var EditMonitorView = BaseView.extend({
 
         events : {
-            'click .name-save' : 'updateMonitorName'
+            'click .name-save' : 'updateMonitorName',
+            'click table.integrations-list td.integration-delete': 'removeIntegration',
+            'click a.integration-add': 'addIntegration'
+            
         },
 
         subscriptions : {
@@ -39,6 +44,12 @@ define([
             self.user    = options.user;
             self.router  = options.router;
             self.templar = options.templar;
+            self.alertKeyLabels = {
+                'email-address': 'Email Address:',
+                'pagerduty-key': 'PagerDuty API Key:',
+                'victorops-key': 'VictorOps API Key:',
+                'unknown': 'Unknown Type:'
+            };
 
             // init delete monitor view
             self.deleteMonitorView = new DeleteMonitorView({
@@ -78,6 +89,17 @@ define([
                 // make sure update has a reference to the instance and model
                 // at the time of editing/updating
                 self.model = result;
+                
+                // old key strings made into objects
+                var keys = result.get('alertKeys');
+                _.each(keys, function(key, idx) {
+                    if(typeof key === 'string') {
+                        keys[idx] = {type_id: 'unknown', value: key};
+                    }
+                });
+                
+                self.alertKeys = new AlertKeys(keys);
+                self.alertKeys.on('add remove change', self.renderIntegrations);
                 _.bind(self.updateMonitor, self, self.model);
 
                 self.getGraphData(self.monitorId, function(result) {
@@ -93,6 +115,8 @@ define([
                                 'output'  : self.model.get('output')
                             }
                         });
+                        
+                        self.renderIntegrations();
 
                         self.$monitor = self.$el.find('.expanded-monitor');
                         //edit-monitor-wrap container element
@@ -133,6 +157,20 @@ define([
                 });
             });
 
+        },
+        
+        renderIntegrations: function() {
+            var self = this;
+            this.alertKeys.each(function(model) {
+                model.set('label', self.alertKeyLabels[model.get('type_id')]);
+            });
+            this.templar.render({
+                path: 'alertkeys',
+                el: this.$el.find('#viewIntegrations'),
+                data: {
+                    alertKeys: this.alertKeys.toJSON()
+                }
+            });
         },
 
         getGraphData : function(monitorId, cb) {
@@ -457,6 +495,39 @@ define([
         },
 
         /**
+         * EditMonitorView#removeIntegration()
+         */
+        removeIntegration: function(e) {
+            e.preventDefault();
+            var model = this.alertKeys.at($(e.currentTarget).parent().index());
+            this.alertKeys.remove(model);
+        },
+        
+        /**
+         * EditMonitorView#addIntegration()
+         */
+        addIntegration: function(e) {
+            e.preventDefault();
+            var $valInput = $('#integration-value');
+            var types = this.alertKeyLabels;
+            var value = $valInput.val();
+            if(!value) {
+                $valInput.addClass('parsley-error');
+                setTimeout(function() {
+                    $valInput.removeClass('parsley-error');
+                }, 5000);
+                return;
+            }
+            this.alertKeys.add(
+                {
+                    type_id: $('#integration-key').val(),
+                    value: value,
+                    label: types[$('#integration-key').val()]
+                }    
+            );
+        },
+        
+        /**
          *
          */
         _setExpandedViewHeight : function() {
@@ -659,7 +730,7 @@ define([
                 'userId'        : self.user.get('id'),
                 'name'          : monitorName,
                 'description'   : self.$el.find('#description').val(),
-                'alertKeys'     : self.parseAlertKeys( self.$el.find('.pager-duty textarea').val() ),
+                'alertKeys'     : self.alertKeys.toJSON(),
                 'cronExpr'      : self._createCronExpr()
             });
 

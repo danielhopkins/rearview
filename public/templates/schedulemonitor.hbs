@@ -1,7 +1,7 @@
 <div class='modal-body'>
     <h2>Name &amp; Schedule</h2>
     <div class='hero-unit'>
-        <form id='namePagerForm' class='clearfix'>
+        <form id='namePagerForm' class='clearfix' parsely-validate>
             <fieldset class='monitor-name control-group'>
                 <label for='monitorName' class='control-label'>Monitor Name:</label>
                     <input type='text' id='monitorName' name='monitorName' class='form-control input-lg' required='required' />
@@ -13,35 +13,9 @@
 
         </form>
     </div>
-    <div class='hero-unit'>
-        <form class='clearfix'>
-            <fieldset class='monitor-name control-group'>
-                <label for='integration-key' class='control-label'>Integration type:</label>
-                <select id='integration-key' name='integration-key' class="input-lg">
-                    <option value='victorops-key'>VictorOps Key</option>
-                    <option value='pagerduty-key'>PagerDuty Key</option>
-                    <option value='email-address'>Email Address</option>
-                </select>
-            </fieldset>
-            <fieldset class='monitor-name control-group'>
-                <label for='integration-value' class='control-label sr-only'>Key or email address:</label>
-                <input id='integration-value' type='text' class="input-lg" />
-            </fieldset>
-            <fieldset class="integration-add-control">
-                <a href="#" class="integration-add">+Add</a>
-            </fieldset>
-            <fieldset class='monitor-key-list control-group'>
-                <!-- TODO: list the stored keys/addresses here -->
-                <table class="integrations-list">
-                    <tbody>
-                        {{#each alertKeys}}
-                            <tr><td>{{label}}</td><td>{{value}}</td><td class="integration-delete"><a href=#">X</a></td></tr>
-                        {{/each}}
-                    </tbody>
-                </table>
-            </fieldset>
-        </form>
-    </div>
+    
+    <div class="alertKeys-section hero-unit"></div>
+    
     <div class='hero-unit'>
         <form class='clearfix'>
             <fieldset class='set-schedule'>

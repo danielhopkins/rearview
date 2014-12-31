@@ -57,20 +57,12 @@ define([
             $(window).resize(resize);
             
             self.alertKeys = new AlertKeys([
-                {id: 1, type: 'PagerDonkey', label: 'PagerDonkey API Key:', value: '01234567890'},
-                {id: 2, type: 'VictorOps', label: 'VictorOps API Key:', value: 'abcdef09876543221'},
-                {id: 3, type: 'Email', label: 'Email Address:', value: 'look@me.com'}                                
+                {id: 1, type_id: 'PagerDonkey', label: 'PagerDonkey API Key:', value: '01234567890'},
+                {id: 2, type_id: 'VictorOps', label: 'VictorOps API Key:', value: 'abcdef09876543221'},
+                {id: 3, type_id: 'Email', label: 'Email Address:', value: 'look@me.com'}                                
             ]);
 
-            self.alertKeys.on('change add remove', function() {
-                self.templar.render({
-                    path : 'schedulemonitor',
-                    el   : self.$el.find('.content-wrap'),
-                    data : {
-                        alertKeys: self.alertKeys.toJSON()                    
-                    }
-                });
-            });
+            self.alertKeys.on('change add remove', self.renderAlertKeys);
 
             self.render();
         },
@@ -89,10 +81,10 @@ define([
             self.templar.render({
                 path : 'schedulemonitor',
                 el   : self.$el.find('.content-wrap'),
-                data : {
-                    alertKeys: self.alertKeys.toJSON()                    
-                }
+                data : {}
             });
+            
+            self.renderAlertKeys();
 
             self.scheduleViewInitialized = true;
 
@@ -103,6 +95,17 @@ define([
             self.modalEl = self.$el.find('.add-monitor');
             self.resizeModal($('#addMonitor'), 'large');
         },
+        
+        renderAlertKeys: function() {
+            this.templar.render({
+                path: 'alertkeys',
+                el: this.$el.find('.alertKeys-section'),
+                data: {
+                    alertKeys: this.alertKeys.toJSON()
+                }
+            });
+        },
+        
         /**
          * AddMonitorView#setScheduleValidation()
          *
@@ -373,15 +376,24 @@ define([
          */
         addIntegration: function(e) {
             e.preventDefault();
+            var $valInput = $('#integration-value');
             var types = {
                 'email-address': 'Email Address:',
                 'pagerduty-key': 'PagerDuty API Key:',
                 'victorops-key': 'VictorOps API Key:'
             };
+            var value = $valInput.val();
+            if(!value) {
+                $valInput.addClass('parsley-error');
+                setTimeout(function() {
+                    $valInput.removeClass('parsley-error');
+                }, 5000);
+                return;
+            }
             this.alertKeys.add(
                 {
                     type_id: $('#integration-key').val(),
-                    value: $('#integration-value').val(),
+                    value: value,
                     label: types[$('#integration-key').val()]
                 }    
             );
