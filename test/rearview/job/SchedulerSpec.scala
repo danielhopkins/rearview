@@ -9,9 +9,10 @@ import org.specs2.mutable.Specification
 import org.specs2.specification.AroundOutside
 import play.api.libs.json.{JsObject, JsString, _}
 import play.api.mvc.AnyContentAsEmpty
-import play.api.test.{FakeApplication, FakeHeaders, FakeRequest}
 import play.api.test.Helpers._
+import play.api.test.{FakeApplication, FakeHeaders, FakeRequest}
 import rearview.Global.database
+import rearview.Global.slickDriver.simple._
 import rearview.alert.{EmailAlert, EmailClient, PagerDutyAlert, PagerDutyHttpClient}
 import rearview.controller.JobsController
 import rearview.dao.{ApplicationDAO, JobDAO, UserDAO}
@@ -23,7 +24,6 @@ import rearview.util._
 import scala.concurrent.Future
 import scala.io.Source
 import scala.slick.jdbc.{StaticQuery => Q}
-import scala.slick.session.Session
 
 class SchedulerSpec extends Specification with FutureMatchers with JobsController { self =>
 
@@ -86,7 +86,7 @@ class SchedulerSpec extends Specification with FutureMatchers with JobsControlle
       running(application) {
         try {
           database withSession { implicit session: Session =>
-            (Q.u + "delete from users").execute()
+            (Q.u + "delete from users").execute
           }
           AsResult(r)
         } finally {

@@ -1,9 +1,11 @@
 package rearview.dao
 
 import java.util.Date
+
 import rearview.Global._
 import rearview.model.Application
-import rearview.util.slick.MapperImplicits._
+
+import slickDriver.simple._
 
 /**
  * Manages database access for the Application object. All Jobs must be part of an Application. Application  is
@@ -11,20 +13,19 @@ import rearview.util.slick.MapperImplicits._
  */
 object ApplicationDAO {
 
-  import slickDriver.simple._
+  import rearview.util.slick.MapperImplicits._
 
   /**
    * Slick Lifted API mappings for column to case-class attribute.
    */
-  object Applications extends Table[Application]("applications") {
+  class Applications(tag: Tag) extends Table[Application](tag, "applications") {
     def id         = column[Long]("id", O.PrimaryKey, O.AutoInc)
     def userId     = column[Long]("user_id")
     def name       = column[String]("name")
     def createdAt  = column[Option[Date]]("created")
     def modifiedAt = column[Option[Date]]("modified")
     def deletedAt  = column[Option[Date]]("deleted_at")
-    def autoInc    = id.? ~ userId ~ name ~ createdAt ~ modifiedAt <> (Application, Application.unapply _) returning id
-    def *          = id.? ~ userId ~ name ~ createdAt ~ modifiedAt <> (Application, Application.unapply _)
+    def *          = (id.?, userId, name, createdAt, modifiedAt) <> (Application.tupled, Application.unapply)
   }
 
 
@@ -36,12 +37,13 @@ object ApplicationDAO {
    */
   def store(app: Application): Option[Application] = {
     database withSession { implicit session: Session =>
+      val apps = TableQuery[Applications]
       app.id match {
         case Some(id) =>
-          Query(Applications) filter(_.id === id) update(app)
+          apps filter(_.id === id) update(app)
           app.id
         case None =>
-          Some(Applications.autoInc.insert(app))
+          Some(apps returning apps.map(_.id) += app)
       }
     } map { id =>
       findById(id).getOrElse(sys.error("Failed to store user"))
@@ -54,7 +56,7 @@ object ApplicationDAO {
    * @return
    */
   def list(): List[Application] = database withSession { implicit session: Session =>
-    Query(Applications) filter(_.deletedAt isNull) list
+    TableQuery[Applications] filter(_.deletedAt isEmpty) list
   }
 
 
@@ -64,7 +66,7 @@ object ApplicationDAO {
    * @return
    */
   def findById(id: Long): Option[Application] = database withSession { implicit session: Session =>
-    Query(Applications) filter(_.id === id) firstOption
+    TableQuery[Applications] filter(_.id === id) firstOption
   }
 
 
@@ -74,6 +76,6 @@ object ApplicationDAO {
    * @return
    */
   def delete(id: Long): Boolean = database withSession { implicit session: Session =>
-    (Query(Applications) filter(_.id === id) map(_.deletedAt) update(Some(new Date))) == 1
+    (TableQuery[Applications] filter(_.id === id) map(_.deletedAt) update(Some(new Date))) == 1
   }
 }

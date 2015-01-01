@@ -7,13 +7,13 @@ import play.api.libs.json.{JsNumber, JsObject, JsString, _}
 import play.api.test.{FakeApplication, FakeRequest}
 import play.api.test.Helpers._
 import rearview.Global.database
+import rearview.Global.slickDriver.simple._
 import rearview.dao.{JobDAO, UserDAO}
 import rearview.job.Scheduler
 import rearview.model.{Job, User}
 
 import scala.concurrent.Future
 import scala.slick.jdbc.{StaticQuery => Q}
-import scala.slick.session.Session
 
 class ApplicationsControllerSpec extends Specification with ApplicationsController {
 
@@ -43,7 +43,7 @@ class ApplicationsControllerSpec extends Specification with ApplicationsControll
     def around[R : AsResult](r:  => R): Result = {
       running(application) {
         database withSession { implicit session: Session =>
-          (Q.u + "delete from users").execute()
+          (Q.u + "delete from users").execute
         }
         AsResult(r)
       }

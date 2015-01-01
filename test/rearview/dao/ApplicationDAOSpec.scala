@@ -6,11 +6,11 @@ import org.specs2.mutable.Specification
 import org.specs2.specification.AroundOutside
 import play.api.test.FakeApplication
 import play.api.test.Helpers.running
-import rearview.Global.database
+import rearview.Global._
+import rearview.Global.slickDriver.simple._
 import rearview.model.{Application, User}
 
 import scala.slick.jdbc.{StaticQuery => Q}
-import scala.slick.session.Session
 
 class ApplicationDAOSpec extends Specification {
 
@@ -26,7 +26,7 @@ class ApplicationDAOSpec extends Specification {
     def around[R : AsResult](r: => R) = {
       running(application) {
         database withSession { implicit session: Session =>
-          (Q.u + "delete from users").execute()
+          (Q.u + "delete from users").execute
         }
         AsResult(r)
       }

@@ -3,8 +3,7 @@ package rearview
 import scala.Array.canBuildFrom
 import scala.collection.JavaConversions._
 import scala.concurrent.Future
-import scala.slick.driver.ExtendedDriver
-import scala.slick.session.Database
+import scala.slick.driver.JdbcDriver
 import play.api.Application
 import play.api.Logger
 import play.api.Mode
@@ -52,9 +51,12 @@ object Global extends WithFilters(LoggingFilter) {
 
   lazy val scheduler = SchedulerImpl()
 
-  lazy val slickDriver = singleton[ExtendedDriver](slickDriverName)
+  lazy val slickDriver = singleton[JdbcDriver](slickDriverName)
 
-  def database = Database.forDataSource(DB.getDataSource())
+  def database = {
+    import slickDriver.simple._
+    Database.forDataSource(DB.getDataSource())
+  }
 
   /**
    * This is a little janky, but I don't want to bring in something like Guice for one scenario.

@@ -1,26 +1,23 @@
 package rearview.dao
 
-import java.sql.Timestamp
-import java.sql.Types
 import java.util.Date
+
 import play.api.Logger
-import play.api.Play.current
 import rearview.Global._
-import rearview.model.ModelImplicits._
 import rearview.model._
-import rearview.util.slick.MapperImplicits._
+import slickDriver.simple._
 
 /**
  * Database access layer for the User class.
  */
 object UserDAO {
 
-  import slickDriver.simple._
+  import rearview.util.slick.MapperImplicits._
 
   /**
    * Slick attribute to column mapping.
    */
-  object Users extends Table[User]("users") {
+  class Users(tag: Tag) extends Table[User](tag, "users") {
     def id         = column[Long]("id", O.PrimaryKey, O.AutoInc)
     def email      = column[String]("email")
     def firstName  = column[String]("first_name")
@@ -28,8 +25,7 @@ object UserDAO {
     def lastLogin  = column[Option[Date]]("last_login")
     def createdAt  = column[Option[Date]]("created")
     def modifiedAt = column[Option[Date]]("modified")
-    def autoInc    = id.? ~ email ~ firstName ~ lastName ~ lastLogin ~ createdAt ~ modifiedAt <> (User, User.unapply _) returning id
-    def *          = id.? ~ email ~ firstName ~ lastName ~ lastLogin ~ createdAt ~ modifiedAt <> (User, User.unapply _)
+    def *          = (id.?, email, firstName, lastName, lastLogin, createdAt, modifiedAt) <> (User.tupled, User.unapply)
   }
 
 
@@ -41,12 +37,13 @@ object UserDAO {
   def store(user: User): Option[User] = {
     try {
       database withSession { implicit session: Session =>
+        val users = TableQuery[Users]
         user.id match {
           case Some(id) =>
-            Query(Users) filter(_.id === id) update(user)
+            users filter(_.id === id) update(user)
             Some(user)
           case None =>
-            Some(user.copy(id = Some(Users.autoInc.insert(user))))
+            Some(user.copy(id = Some(users returning users.map(_.id) += (user))))
         }
       }
     } catch {
@@ -62,7 +59,7 @@ object UserDAO {
    * @return
    */
   def list(): List[User] = database withSession { implicit session =>
-    Query(Users) list
+    TableQuery[Users] list
   }
 
 
@@ -72,7 +69,7 @@ object UserDAO {
    * @return
    */
   def findById(id: Long): Option[User] = database withSession { implicit session =>
-    Query(Users) filter (_.id === id) firstOption
+    TableQuery[Users] filter (_.id === id) firstOption
   }
 
 
@@ -82,6 +79,6 @@ object UserDAO {
    * @return
    */
   def findByEmail(email: String): Option[User] = database withSession { implicit session =>
-    Query(Users) where(_.email === email) firstOption
+    TableQuery[Users] filter (_.email === email) firstOption
   }
 }
