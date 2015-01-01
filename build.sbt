@@ -24,7 +24,7 @@ unmanagedSourceDirectories in Compile += new File("src/main/resources")
 
 libraryDependencies ++= Seq(
   "commons-io"                    %  "commons-io"                  % "2.4",
-  "com.typesafe.slick"            %% "slick"                       % "1.0.1",
+  "com.typesafe.slick"            %% "slick"                       % "2.1.0",
   "com.typesafe.akka"             %% "akka-agent"                  % "2.3.8",
   "com.typesafe.akka"             %% "akka-cluster"                % "2.3.8",
   "com.typesafe.play.plugins"     %% "play-statsd"                 % "2.1.0",

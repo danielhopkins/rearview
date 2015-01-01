@@ -2,41 +2,25 @@ package rearview.dao
 
 import java.util.Date
 import play.api.libs.json._
-import rearview.Global.{database, slickDriver}
+import rearview.Global._
 import rearview.model._
-import rearview.model.Constants._
-import rearview.model.ModelImplicits._
-import rearview.util.slick.MapperImplicits._
-import scala.slick.lifted.BaseTypeMapper
 import rearview.model.JobStatus
 import org.joda.time._
+import slickDriver.simple._
 
 /**
  * Data access layer for Job objects.
  */
 object JobDAO {
 
-  import slickDriver.simple._
+  import rearview.util.slick.MapperImplicits._
 
-  val constTrue = new ConstColumn[Boolean](true)
-
-
-  /**
-   * Custom mapper for the JobStatus class
-   */
-  implicit object JobStatusMapper extends MappedTypeMapper[JobStatus,String] with BaseTypeMapper[JobStatus] {
-   def map(s: JobStatus) = s.name
-
-   def comap(s: String): JobStatus = JobStatus.unapply(s).getOrElse(sys.error(s"Missing mapping for JobStatus: $s"))
-
-   override def sqlTypeName = Some("VARCHAR")
-  }
-
+  val constTrue = new LiteralColumn[Boolean](true)
 
   /**
    * Column to attribute mappings for the Job class
    */
-  object Jobs extends Table[Job]("jobs") {
+  class Jobs(tag: Tag) extends Table[Job](tag, "jobs") {
     def id            = column[Long]("id", O.PrimaryKey, O.AutoInc)
     def userId        = column[Long]("user_id")
     def appId         = column[Long]("app_id")
@@ -56,32 +40,31 @@ object JobDAO {
     def createdAt     = column[Option[Date]]("created")
     def modifiedAt    = column[Option[Date]]("modified")
     def deletedAt     = column[Option[Date]]("deleted_at")
-    def autoInc       = id.? ~ userId ~ appId ~ name ~ cronExpr ~ metrics ~ monitorExpr ~ minutes ~ toDate ~ description ~ active ~ status ~ lastRun ~ nextRun ~ alertKeys ~ errorTimeout ~ createdAt ~ modifiedAt ~ deletedAt <> (Job, Job.unapply _) returning id
-    def *             = id.? ~ userId ~ appId ~ name ~ cronExpr ~ metrics ~ monitorExpr ~ minutes ~ toDate ~ description ~ active ~ status ~ lastRun ~ nextRun ~ alertKeys ~ errorTimeout ~ createdAt ~ modifiedAt ~ deletedAt <> (Job, Job.unapply _)
+    def *             = (id.?, userId, appId, name, cronExpr, metrics, monitorExpr, minutes, toDate, description, active, status, lastRun, nextRun, alertKeys, errorTimeout, createdAt, modifiedAt, deletedAt) <> (Job.tupled, Job.unapply)
   }
 
 
   /**
    * Column to attribute mappings for the JobData class
    */
-  object JobData extends Table[(Long, Date, String)]("job_data") {
+  class JobData(tag: Tag) extends Table[(Long, Date, String)](tag, "job_data") {
     def jobId     = column[Long]("job_id")
     def createdAt = column[Date]("created")
     def data      = column[String]("data")
-    def *         = jobId ~ createdAt ~ data
+    def *         = (jobId, createdAt, data)
   }
 
 
   /**
    * Column to attibute mappings for the JobErrors class
    */
-  object JobErrors extends Table[(Long, Long, Date, JobStatus, Option[String])]("job_errors") {
+  class JobErrors(tag: Tag) extends Table[(Long, Long, Date, JobStatus, Option[String])](tag, "job_errors") {
     def id        = column[Long]("id", O.PrimaryKey, O.AutoInc)
     def jobId     = column[Long]("job_id")
     def createdAt = column[Date]("created")
     def message   = column[Option[String]]("message")
     def status    = column[JobStatus]("status")
-    def *         = id ~ jobId ~ createdAt ~ status ~ message
+    def *         = (id, jobId, createdAt, status, message)
   }
 
   /**
@@ -89,8 +72,8 @@ object JobDAO {
    */
   implicit class DateOptColumn(val column: Column[Option[Date]]) {
     def ===(stringOpt: Option[Date]): Column[Option[Boolean]] = stringOpt match {
-      case Some(n) => column.is(stringOpt)
-      case       _ => column.isNull
+      case Some(n) => column === stringOpt
+      case       _ => column.isEmpty
     }
   }
 
@@ -102,12 +85,13 @@ object JobDAO {
    * @return
    */
   def store(job: Job): Option[Job] = database withSession { implicit session: Session =>
+    val jobs = TableQuery[Jobs]
     job.id match {
       case Some(id) =>
-        Query(Jobs) filter(_.id === id) update(job)
+        jobs filter(_.id === id) update(job)
         job.id
       case None =>
-        Some(Jobs.autoInc.insert(job))
+        Some(jobs returning jobs.map(_.id) += job)
     }
   } flatMap { id =>
     findById(id)
@@ -117,15 +101,15 @@ object JobDAO {
    * Each time a job runs it's data for the last run is saved, replacing the existing record.  We do not currently
    * keep a log, simply the last data.
    * @param jobId
-   * @param version
    * @param data
    * @return
    */
   def storeData(jobId: Long, data: JsValue): JsValue = database withSession { implicit session: Session =>
-    (Query(JobData) filter (data => data.jobId === jobId) firstOption) map { r =>
-      Query(JobData) filter (data => data.jobId === jobId) update (jobId, new Date, data.toString)
+    val jobData = TableQuery[JobData]
+    (jobData filter (data => data.jobId === jobId) firstOption) map { r =>
+      jobData filter (data => data.jobId === jobId) update (jobId, new Date, data.toString)
     } orElse {
-      JobData insert (jobId, new Date, data.toString)
+      jobData += (jobId, new Date, data.toString)
       Some(data)
     }
     data
@@ -136,12 +120,14 @@ object JobDAO {
    * If a job has an error we store the error and it's data.  Unlike job_data we do store a running log of all
    * errors for a job/version.
    * @param jobId
-   * @param version
+   * @param status
    * @param message
+   * @param date
    * @return
    */
   def storeError(jobId: Long, status: JobStatus, message: Option[String] = None, date: Date = new Date): Int = database withSession { implicit session: Session =>
-    JobErrors.jobId ~ JobErrors.createdAt ~ JobErrors.status ~ JobErrors.message insert(jobId, date, status, message)
+    val jobErrors = TableQuery[JobErrors]
+    jobErrors.map(e => (e.jobId, e.createdAt, e.status, e.message)) += (jobId, date, status, message)
   }
 
 
@@ -151,7 +137,7 @@ object JobDAO {
    * @return
    */
   def updateStatus(job: Job): Job = database withSession { implicit session: Session =>
-    Query(Jobs) filter(j => j.id === job.id) map(j => j.status ~ j.lastRun)  update (job.status, job.lastRun)
+    TableQuery[Jobs] filter(j => j.id === job.id) map(j => (j.status, j.lastRun))  update (job.status, job.lastRun)
     job
   }
 
@@ -162,17 +148,17 @@ object JobDAO {
    * @return
    */
   def delete(id: Long): Boolean = database withSession { implicit session: Session =>
-    (Query(Jobs) filter(_.id === id) map(_.deletedAt) update(Some(new Date))) > 0
+    (TableQuery[Jobs] filter(_.id === id) map(_.deletedAt) update(Some(new Date))) > 0
   }
 
 
   /**
    * Delete a job by application id.  Delete means setting the deleted_at timestamp.
-   * @param id
+   * @param appId
    * @return
    */
   def deleteByApplication(appId: Long): Boolean = database withSession { implicit session: Session =>
-    (Query(Jobs) filter(_.appId === appId) map(_.deletedAt) update(Some(new Date))) > 0
+    (TableQuery[Jobs] filter(_.appId === appId) map(_.deletedAt) update(Some(new Date))) > 0
   }
 
 
@@ -184,18 +170,17 @@ object JobDAO {
    * @return
    */
   def list(onlyActive: Boolean = false, includeDeleted: Boolean = false): List[Job] = database withSession { implicit session: Session =>
-    Query(Jobs) filter(j => (if(!includeDeleted) j.deletedAt.isNull else constTrue) && (if(onlyActive) j.active === true else constTrue)) list
+    TableQuery[Jobs] filter(j => (if(!includeDeleted) j.deletedAt.isEmpty else constTrue) && (if(onlyActive) j.active === true else constTrue)) list
   }
 
 
   /**
    * Find a job by id and optional version.  If no version is specified the latest is returned.
    * @param id
-   * @param version_
    * @return
    */
   def findById(id: Long): Option[Job] = database withSession { implicit session: Session =>
-    Query(Jobs) filter (j => j.id === id) firstOption
+    TableQuery[Jobs] filter (j => j.id === id) firstOption
   }
 
 
@@ -206,18 +191,17 @@ object JobDAO {
    * @return
    */
   def findByApplication(appId: Long, onlyActive: Boolean = false): List[Job] = database withSession { implicit session: Session =>
-    Query(Jobs) filter(j => j.appId === appId && j.deletedAt.isNull && (if(onlyActive) j.active === true else constTrue)) list
+    TableQuery[Jobs] filter(j => j.appId === appId && j.deletedAt.isEmpty && (if(onlyActive) j.active === true else constTrue)) list
   }
 
 
   /**
    * Return the data for a given job and optional id (else the most recent version is used).
    * @param jobId
-   * @param version
    * @return
    */
   def findData(jobId: Long): Option[JsValue] = database withSession { implicit session: Session =>
-    (Query(JobData) filter(data => data.jobId === jobId) firstOption) map { t =>
+    (TableQuery[JobData] filter(data => data.jobId === jobId) firstOption) map { t =>
       Json.parse(t._3)
     }
   }
@@ -229,8 +213,8 @@ object JobDAO {
    */
   def findErrorsByJobId(jobId: Long, limit: Int = 50): Seq[JobError] = database withSession { implicit session: Session =>
     foldErrorDurations(((for {
-      j <- Jobs if j.id === jobId
-      e <- JobErrors if j.deletedAt === None && e.jobId === j.id
+      j <- TableQuery[Jobs] if j.id === jobId
+      e <- TableQuery[JobErrors] if j.deletedAt === None && e.jobId === j.id
     } yield (e)) sortBy (_.createdAt.desc) take(limit) list) map { r =>
       JobError(r._1, r._2, r._3, r._4, r._5)
     })
@@ -239,13 +223,14 @@ object JobDAO {
 
   /**
    * Return all errors by application id
-   * @param jobId
+   * @param appId
+   * @param limit
    * @return
    */
   def findErrorsByApplicationId(appId: Long, limit: Int = 250): Seq[JobError] = database withSession { implicit session: Session =>
     foldErrorDurations(((for {
-      j <- Jobs if j.appId === appId
-      e <- JobErrors if j.deletedAt === None && e.jobId === j.id
+      j <- TableQuery[Jobs] if j.appId === appId
+      e <- TableQuery[JobErrors] if j.deletedAt === None && e.jobId === j.id
     } yield (e)) sortBy (_.createdAt.desc) take(limit) list) map { r =>
       JobError(r._1, r._2, r._3, r._4, r._5)
     })

@@ -4,9 +4,10 @@ import org.specs2.execute.{AsResult, Result}
 import org.specs2.mutable.Specification
 import org.specs2.specification.AroundOutside
 import play.api.libs.json._
-import play.api.test.{FakeApplication, FakeHeaders, FakeRequest}
 import play.api.test.Helpers._
+import play.api.test.{FakeApplication, FakeHeaders, FakeRequest}
 import rearview.Global.database
+import rearview.Global.slickDriver.simple._
 import rearview.dao.{ApplicationDAO, UserDAO}
 import rearview.graphite.{GraphiteResponse, MockGraphiteClient}
 import rearview.model.ModelImplicits._
@@ -14,7 +15,6 @@ import rearview.model.{Application, User, _}
 
 import scala.io.Source
 import scala.slick.jdbc.{StaticQuery => Q}
-import scala.slick.session.Session
 
 class MonitorControllerSpec extends Specification {
 
@@ -33,7 +33,7 @@ class MonitorControllerSpec extends Specification {
     def around[R : AsResult](r:  => R): Result = {
       running(application) {
         database withSession { implicit session: Session =>
-          (Q.u + "delete from users").execute()
+          (Q.u + "delete from users").execute
         }
         AsResult(r)
       }

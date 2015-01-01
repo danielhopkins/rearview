@@ -38,7 +38,7 @@ class JobDAOSpec extends Specification with MatchersImplicits {
       import rearview.Global.slickDriver.simple._
       running(application) {
         database withSession { implicit session: Session =>
-          (Q.u + "delete from users").execute()
+          (Q.u + "delete from users").execute
         }
         AsResult(r)
       }

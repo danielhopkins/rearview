@@ -9,6 +9,7 @@ import play.api.mvc.AnyContentAsEmpty
 import play.api.test.Helpers._
 import play.api.test._
 import rearview.Global.database
+import rearview.Global.slickDriver.simple._
 import rearview.dao.{ApplicationDAO, JobDAO, UserDAO}
 import rearview.graphite.{ConfigurableHttpClient, GraphiteParser, GraphiteResponse, MockGraphiteClient}
 import rearview.job.Scheduler
@@ -18,7 +19,6 @@ import rearview.model.{Application, Job, User}
 import scala.concurrent.Future
 import scala.io.Source
 import scala.slick.jdbc.{StaticQuery => Q}
-import scala.slick.session.Session
 
 
 class JobsControllerSpec extends Specification with JobsController { self =>
@@ -47,7 +47,7 @@ class JobsControllerSpec extends Specification with JobsController { self =>
     def around[R : AsResult](r:  => R): Result = {
       running(application) {
         database withSession { implicit session: Session =>
-          (Q.u + "delete from users").execute()
+          (Q.u + "delete from users").execute
         }
         AsResult(r)
       }
