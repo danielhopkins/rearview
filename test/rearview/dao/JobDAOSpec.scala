@@ -163,7 +163,7 @@ class JobDAOSpec extends Specification with MatchersImplicits {
     }
 
     "store pager duty key" in jobContext { monitorJob: Job =>
-      val keys = List("12345", "44444")
+      val keys = List(PagerDutyAlertKey("", "12345"), PagerDutyAlertKey("", "44444"))
       val job  = monitorJob.copy(alertKeys = Some(keys))
       val savedJob = JobDAO.store(job)
       savedJob.flatMap(_.id) must beSome

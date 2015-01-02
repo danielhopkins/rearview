@@ -1,0 +1,7 @@
+graphite:
+  image: kamon/grafana_graphite
+  ports:
+    - "8080:80"
+    - "8081:81"
+    - "8125:8125/udp"
+    - "8126:8126"

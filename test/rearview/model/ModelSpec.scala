@@ -28,18 +28,14 @@ class ModelSpec extends Specification {
     }
 
     "Parse pager duty keys" in {
-       val json   = jobJSON + ("alertKeys" -> JsArray(List(JsString("a"), JsString("b"))))
-       val result = jobFormat.reads(json).asOpt
-       result must beSome
-       result.get.alertKeys must_== Some(List("a", "b"))
+      val keyA = PagerDutyAlertKey("", "a")
+      val keyB = PagerDutyAlertKey("", "b")
+      val json   = jobJSON + ("alertKeys" -> JsArray(List(AlertKeyFormat.writes(keyA), AlertKeyFormat.writes(keyB))))
+      val result = jobFormat.reads(json).asOpt
+      result must beSome
+      result.get.alertKeys must_== Some(List(keyA, keyB))
     }
 
-    "filter empty pager duty keys" in {
-       val json   = jobJSON + ("alertKeys" -> JsArray(List(JsString(""), JsString(""))))
-       val result = jobFormat.reads(json).asOpt
-       result must beSome
-       result.get.alertKeys must beNone
-    }
   }
 
 }

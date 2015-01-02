@@ -35,7 +35,7 @@ object JobDAO {
     def status        = column[Option[JobStatus]]("status")
     def lastRun       = column[Option[Date]]("last_run")
     def nextRun       = column[Option[Date]]("next_run")
-    def alertKeys     = column[Option[List[String]]]("alert_keys")
+    def alertKeys     = column[Option[List[AlertKey]]]("alert_keys")
     def errorTimeout  = column[Int]("error_timeout")
     def createdAt     = column[Option[Date]]("created")
     def modifiedAt    = column[Option[Date]]("modified")

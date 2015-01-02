@@ -23,16 +23,16 @@ trait PagerDutyAlert extends Alert {
    * Implement logic to filter for pager duty keys and send over http client
    */
   def send(job: Job, result: AnalysisResult) {
-    job.id map { jobId =>
-      job.alertKeys map {
-        _.filter { key =>
-          !Utils.isEmailAddress(key)
-        }
-      } foreach { keys =>
-        val (description, payload) = pagerDutyPayload(job, result)
-        post(jobId.toString, keys, description, Some(payload))
-      }
-    }
+//    job.id map { jobId =>
+//      job.alertKeys map {
+//        _.filter { key =>
+//          !Utils.isEmailAddress(key)
+//        }
+//      } foreach { keys =>
+//        val (description, payload) = pagerDutyPayload(job, result)
+//        post(jobId.toString, keys, description, Some(payload))
+//      }
+//    }
   }
 
 

@@ -234,7 +234,7 @@ class SchedulerSpec extends Specification with FutureMatchers with JobsControlle
   "Failures" should {
     "Notify via PagerDuty" in testContext { implicit ctx: TestContext =>
       val jobOpt = JobDAO.store(Job(None, ctx.user.id.get, ctx.app.id.get,  "test", "* * * * * ?", List("stats_counts.deals.logins.successful"),
-          Some("""raise "#{@name} encountered an error""""), Some(60), None, alertKeys = Some(List("12345"))))
+          Some("""raise "#{@name} encountered an error""""), Some(60), None, alertKeys = Some(List(PagerDutyAlertKey("", "12345")))))
       jobOpt must beSome
 
       val job = jobOpt.get
@@ -259,7 +259,7 @@ class SchedulerSpec extends Specification with FutureMatchers with JobsControlle
 
     "Notify via email" in testContext { implicit ctx: TestContext =>
       val jobOpt = JobDAO.store(Job(None, ctx.user.id.get, ctx.app.id.get, "test", "* * * * * ?", List("stats_counts.deals.logins.successful"),
-        Some("""raise "#{@name} encountered an error""""), Some(60), None, alertKeys = Some(List("jeff.simpson@livingsocial.com"))))
+        Some("""raise "#{@name} encountered an error""""), Some(60), None, alertKeys = Some(List(EmailAlertKey("", "jeff.simpson@livingsocial.com")))))
       jobOpt must beSome
 
       val job = jobOpt.get
@@ -280,7 +280,7 @@ class SchedulerSpec extends Specification with FutureMatchers with JobsControlle
 
     "Notify via email and pagerduty" in testContext { implicit ctx: TestContext =>
       val jobOpt = JobDAO.store(Job(None, ctx.user.id.get, ctx.app.id.get,  "test", "* * * * * ?", List("stats_counts.deals.logins.successful"),
-        Some("""raise "#{@name} encountered an error""""), Some(60), None, alertKeys = Some(List("jeff.simpson@livingsocial.com", "12345"))))
+        Some("""raise "#{@name} encountered an error""""), Some(60), None, alertKeys = Some(List(EmailAlertKey("", "jeff.simpson@livingsocial.com"), PagerDutyAlertKey("", "12345")))))
       jobOpt must beSome
 
       val job = jobOpt.get
@@ -306,7 +306,7 @@ class SchedulerSpec extends Specification with FutureMatchers with JobsControlle
     "Not notify if last status != success && last run < errorTimeout" in testContext { implicit ctx: TestContext =>
       val lastRun = new DateTime minusMinutes(61)
       val jobOpt  = JobDAO.store(Job(None, ctx.user.id.get, ctx.app.id.get, "test", "* * * * * ?", List("stats_counts.deals.logins.successful"),
-                                Some("""raise "Some Error""""), Some(60), None, alertKeys = Some(List("12345")), status = Some(FailedStatus),
+                                Some("""raise "Some Error""""), Some(60), None, alertKeys = Some(List(PagerDutyAlertKey("", "12345"))), status = Some(FailedStatus),
                                 lastRun = Some(lastRun.toDate)))
       jobOpt must beSome
 
@@ -327,7 +327,7 @@ class SchedulerSpec extends Specification with FutureMatchers with JobsControlle
     "Store errors" in testContext { implicit ctx: TestContext =>
       val msg = "Some error message"
       val jobOpt = JobDAO.store(Job(None, ctx.user.id.get, ctx.app.id.get,  "test", "* * * * * ?", List("stats_counts.deals.logins.successful"),
-                                Some("raise '%s'".format(msg)), Some(60), None, alertKeys = Some(List("12345"))))
+                                Some("raise '%s'".format(msg)), Some(60), None, alertKeys = Some(List(PagerDutyAlertKey("", "12345")))))
       jobOpt must beSome
 
       val job = jobOpt.get

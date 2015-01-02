@@ -5,13 +5,13 @@
 package rearview.model
 
 import java.util.Date
+
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Format._
 import play.api.libs.json.Reads._
 import play.api.libs.json.Writes._
 import play.api.libs.json._
 import rearview.monitor.Monitor
-import scala.Array.fallbackCanBuildFrom
 
 class JobParseException(message: String) extends Exception(message)
 
@@ -102,11 +102,21 @@ case class Job(id:            Option[Long],
                status:        Option[JobStatus] = None,
                lastRun:       Option[Date] = None,
                nextRun:       Option[Date] = None,
-               alertKeys:     Option[List[String]] = None,
+               alertKeys:     Option[List[AlertKey]] = None,
                errorTimeout:  Int = Constants.ERROR_TIMEOUT,
                createdAt:     Option[Date] = None,
                modifiedAt:    Option[Date] = None,
                deletedAt:     Option[Date] = None)
+
+
+
+sealed trait AlertKey {
+  val value: String
+  val label: String
+}
+case class EmailAlertKey(value: String, label: String) extends AlertKey
+case class PagerDutyAlertKey(value: String, label: String) extends AlertKey
+case class VictorOpsAlertKey(value: String, label: String) extends AlertKey
 
 
 /**
@@ -226,8 +236,26 @@ object ModelImplicits {
       origFormat.writes(o)
   }
 
+  implicit object AlertKeyFormat extends Format[AlertKey] {
+    def reads(json: JsValue) = {
+      (json \ "type") match {
+        case JsString("email")      => JsSuccess(EmailAlertKey((json \ "label").as[String], (json \ "value").as[String]))
+        case JsString("pager_duty") => JsSuccess(PagerDutyAlertKey((json \ "label").as[String], (json \ "value").as[String]))
+        case JsString("victorops")  => JsSuccess(VictorOpsAlertKey((json \ "label").as[String], (json \ "value").as[String]))
+        case _                      => sys.error(s"Unknown alert key type")
+      }
+    }
+
+    def writes(k: AlertKey) = k match {
+      case EmailAlertKey(label, value)     => Json.obj("type" -> "email", "label" -> label, "value" -> value)
+      case PagerDutyAlertKey(label, value) => Json.obj("type" -> "pager_duty", "label" -> label, "value" -> value)
+      case VictorOpsAlertKey(label, value) => Json.obj("type" -> "victorops", "label" -> label, "value" -> value)
+    }
+  }
+
+
   implicit val jobFormat: Format[Job] = (
-      (__ \ "id").formatNullable[Long] ~
+    (__ \ "id").formatNullable[Long] ~
       (__ \ "userId").format[Long] ~
       (__ \ "appId").format[Long] ~
       (__ \ "name").format[String] ~
@@ -241,7 +269,7 @@ object ModelImplicits {
       (__ \ "status").formatNullable[JobStatus] ~
       (__ \ "lastRun").formatNullable[Date] ~
       (__ \ "nextRun").formatNullable[Date] ~
-      optJsArrayString("alertKeys") ~
+      (__ \ "alertKeys").formatNullable[List[AlertKey]] ~
       (__ \ "errorTimeout").format[Int] ~
       (__ \ "createdAt").formatNullable[Date] ~
       (__ \ "modifiedAt").formatNullable[Date] ~

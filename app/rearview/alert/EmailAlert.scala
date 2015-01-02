@@ -19,17 +19,17 @@ trait EmailAlert extends Alert {
    * Implement logic to filter for pager duty keys and send over http client
    */
   def send(job: Job, result: AnalysisResult) {
-    job.id map { jobId =>
-      val (subject, payload) = emailPayload(job, result)
-
-      job.alertKeys map {
-        _.filter { key =>
-          Utils.isEmailAddress(key)
-        }
-      } foreach { recipients =>
-        client.send(recipients, Global.emailFrom, subject, payload)
-      }
-    }
+//    job.id map { jobId =>
+//      val (subject, payload) = emailPayload(job, result)
+//
+//      job.alertKeys map {
+//        _.filter { key =>
+//          Utils.isEmailAddress(key)
+//        }
+//      } foreach { recipients =>
+//        client.send(recipients, Global.emailFrom, subject, payload)
+//      }
+//    }
   }
 
 
