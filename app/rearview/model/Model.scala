@@ -111,12 +111,12 @@ case class Job(id:            Option[Long],
 
 
 sealed trait AlertKey {
-  val value: String
   val label: String
+  val value: String
 }
-case class EmailAlertKey(value: String, label: String) extends AlertKey
-case class PagerDutyAlertKey(value: String, label: String) extends AlertKey
-case class VictorOpsAlertKey(value: String, label: String) extends AlertKey
+case class EmailAlertKey(label: String, value: String) extends AlertKey
+case class PagerDutyAlertKey(label: String, value: String) extends AlertKey
+case class VictorOpsAlertKey(label: String, value: String) extends AlertKey
 
 
 /**
@@ -237,19 +237,23 @@ object ModelImplicits {
   }
 
   implicit object AlertKeyFormat extends Format[AlertKey] {
+    val TYPE  = "type"
+    val LABEL = "label"
+    val VALUE = "value"
+
     def reads(json: JsValue) = {
-      (json \ "type") match {
-        case JsString("email")      => JsSuccess(EmailAlertKey((json \ "label").as[String], (json \ "value").as[String]))
-        case JsString("pager_duty") => JsSuccess(PagerDutyAlertKey((json \ "label").as[String], (json \ "value").as[String]))
-        case JsString("victorops")  => JsSuccess(VictorOpsAlertKey((json \ "label").as[String], (json \ "value").as[String]))
-        case _                      => sys.error(s"Unknown alert key type")
+      json \ TYPE match {
+        case JsString("email")     => JsSuccess(EmailAlertKey((json \ LABEL).as[String], (json \ VALUE).as[String]))
+        case JsString("pagerduty") => JsSuccess(PagerDutyAlertKey((json \ LABEL).as[String], (json \ VALUE).as[String]))
+        case JsString("victorops") => JsSuccess(VictorOpsAlertKey((json \ LABEL).as[String], (json \ VALUE).as[String]))
+        case _                     => sys.error(s"Unknown alert key type")
       }
     }
 
     def writes(k: AlertKey) = k match {
-      case EmailAlertKey(label, value)     => Json.obj("type" -> "email", "label" -> label, "value" -> value)
-      case PagerDutyAlertKey(label, value) => Json.obj("type" -> "pager_duty", "label" -> label, "value" -> value)
-      case VictorOpsAlertKey(label, value) => Json.obj("type" -> "victorops", "label" -> label, "value" -> value)
+      case EmailAlertKey(label, value)     => Json.obj(TYPE -> "email", LABEL -> label, VALUE -> value)
+      case PagerDutyAlertKey(label, value) => Json.obj(TYPE -> "pagerduty", LABEL -> label, VALUE -> value)
+      case VictorOpsAlertKey(label, value) => Json.obj(TYPE -> "victorops", LABEL -> label, VALUE -> value)
     }
   }
 

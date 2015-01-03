@@ -26,7 +26,7 @@ class MonitorControllerSpec extends Specification {
 
   def jobContext = new AroundOutside[Application] {
     lazy val ctx = {
-      val user = UserDAO.store(User(None, email = "test@hungrymachine.com", firstName = "Jeff", lastName = "Simpson")).get
+      val user = UserDAO.store(User(None, email = "test@victorops.com", firstName = "Jeff", lastName = "Simpson")).get
       ApplicationDAO.store(Application(None, name = "Test", userId = user.id.get)).get
     }
 
@@ -42,7 +42,7 @@ class MonitorControllerSpec extends Specification {
     def outside = ctx
   }
 
-  lazy val username       = "test@livingsocial.com"
+  lazy val username       = "test@victorops.com"
   lazy val monitorPayload = Source.fromFile("test/monitor.dat").getLines().reduceLeft(_+_)
   lazy val nanPayload     = Source.fromFile("test/nan.dat").getLines().reduceLeft(_+_)
 
@@ -79,7 +79,7 @@ class MonitorControllerSpec extends Specification {
         "userId"     -> app.userId,
         "jobType"    -> "monitor",
         "name"       -> "testMonitor",
-        "recipients" -> "test@livingsocial.com",
+        "recipients" -> "test@victorops.com",
         "active"     -> true,
         "cronExpr"   -> "0 * * * * ?",
         "params"     -> JsNull,

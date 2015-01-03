@@ -45,9 +45,9 @@ define([
             self.router  = options.router;
             self.templar = options.templar;
             self.alertKeyLabels = {
-                'email-address': 'Email Address:',
-                'pagerduty-key': 'PagerDuty API Key:',
-                'victorops-key': 'VictorOps API Key:',
+                'email': 'Email Address:',
+                'pagerduty': 'PagerDuty API Key:',
+                'victorops': 'VictorOps API Key:',
                 'unknown': 'Unknown Type:'
             };
 
@@ -94,7 +94,7 @@ define([
                 var keys = result.get('alertKeys');
                 _.each(keys, function(key, idx) {
                     if(typeof key === 'string') {
-                        keys[idx] = {type_id: 'unknown', value: key};
+                        keys[idx] = {type: 'unknown', value: key};
                     }
                 });
                 
@@ -162,7 +162,7 @@ define([
         renderIntegrations: function() {
             var self = this;
             this.alertKeys.each(function(model) {
-                model.set('label', self.alertKeyLabels[model.get('type_id')]);
+                model.set('label', self.alertKeyLabels[model.get('type')]);
             });
             this.templar.render({
                 path: 'alertkeys',
@@ -238,7 +238,7 @@ define([
                 $content = '';
 
             $.ajax({
-                url     : '/help/quick.html',
+                url     : '/public/help/quick.html',
                 async   : false,
                 success : function( response ) {
                     $content = response;
@@ -520,7 +520,7 @@ define([
             }
             this.alertKeys.add(
                 {
-                    type_id: $('#integration-key').val(),
+                    type: $('#integration-key').val(),
                     value: value,
                     label: types[$('#integration-key').val()]
                 }    

@@ -77,7 +77,7 @@ class SchedulerSpec extends Specification with FutureMatchers with JobsControlle
 
   def testContext = new AroundOutside[TestContext] {
     lazy val ctx = {
-      val user = UserDAO.store(User(None, "jeff.simpson@hungrymachine.com", "Jeff", "Simpson")).get
+      val user = UserDAO.store(User(None, "jeff@victorops.com", "Jeff", "Simpson")).get
       val app  = ApplicationDAO.store(Application(None, name = "Test", userId = user.id.get)).get
       TestContext(app, user)
     }
@@ -223,7 +223,7 @@ class SchedulerSpec extends Specification with FutureMatchers with JobsControlle
         jobs.head must be_==(job)
       }
 
-      val deleteResult = delete(job.id.get)(FakeRequest(DELETE, "/jobs/" + job.id.get, FakeHeaders(), AnyContentAsEmpty).withSession(("username", "jeff.simpson@hungrymachine.com")))
+      val deleteResult = delete(job.id.get)(FakeRequest(DELETE, "/jobs/" + job.id.get, FakeHeaders(), AnyContentAsEmpty).withSession(("username", "jeff@victorops.com")))
       status(deleteResult) must equalTo(OK)
       scheduler.list() must whenDelivered { jobs: Seq[Job] =>
         jobs.size === 0
@@ -259,7 +259,7 @@ class SchedulerSpec extends Specification with FutureMatchers with JobsControlle
 
     "Notify via email" in testContext { implicit ctx: TestContext =>
       val jobOpt = JobDAO.store(Job(None, ctx.user.id.get, ctx.app.id.get, "test", "* * * * * ?", List("stats_counts.deals.logins.successful"),
-        Some("""raise "#{@name} encountered an error""""), Some(60), None, alertKeys = Some(List(EmailAlertKey("", "jeff.simpson@livingsocial.com")))))
+        Some("""raise "#{@name} encountered an error""""), Some(60), None, alertKeys = Some(List(EmailAlertKey("", "jeff@victorops.com")))))
       jobOpt must beSome
 
       val job = jobOpt.get
@@ -280,7 +280,7 @@ class SchedulerSpec extends Specification with FutureMatchers with JobsControlle
 
     "Notify via email and pagerduty" in testContext { implicit ctx: TestContext =>
       val jobOpt = JobDAO.store(Job(None, ctx.user.id.get, ctx.app.id.get,  "test", "* * * * * ?", List("stats_counts.deals.logins.successful"),
-        Some("""raise "#{@name} encountered an error""""), Some(60), None, alertKeys = Some(List(EmailAlertKey("", "jeff.simpson@livingsocial.com"), PagerDutyAlertKey("", "12345")))))
+        Some("""raise "#{@name} encountered an error""""), Some(60), None, alertKeys = Some(List(EmailAlertKey("", "jeff@victorops.com"), PagerDutyAlertKey("", "12345")))))
       jobOpt must beSome
 
       val job = jobOpt.get

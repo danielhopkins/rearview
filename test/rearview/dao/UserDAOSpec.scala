@@ -20,7 +20,7 @@ class UserDAOSpec extends Specification with AroundExample {
       "db.default.url"     -> "jdbc:mysql://localhost:3306/rearview_test",
       "logger.application" -> "ERROR"))
 
-  val email     = "test@livingsocial.com"
+  val email     = "test@victorops.com"
   val firstName = "testFirst"
   val lastName  = "testLast"
 

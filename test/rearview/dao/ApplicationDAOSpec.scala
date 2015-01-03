@@ -21,7 +21,7 @@ class ApplicationDAOSpec extends Specification {
       "ehcacheplugin"  -> "disabled"))
 
   def testContext = new AroundOutside[User] {
-    lazy val user = UserDAO.store(User(None, "jeff.simpson@livingsocial.com", "jeff", "simpson")).get
+    lazy val user = UserDAO.store(User(None, "jeff@victorops.com", "jeff", "simpson")).get
 
     def around[R : AsResult](r: => R) = {
       running(application) {

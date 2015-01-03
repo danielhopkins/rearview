@@ -16,7 +16,7 @@ packageDescription in Debian:= "Monitoring framework for Graphite metrics"
 
 parallelExecution in Test := false
 
-//playAssetsDirectories <+= baseDirectory / "public2"
+unmanagedResourceDirectories in Assets += baseDirectory.value / "public2"
 
 unmanagedResourceDirectories in Compile += new File("src/main/resources")
 

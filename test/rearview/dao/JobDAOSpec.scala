@@ -29,9 +29,10 @@ class JobDAOSpec extends Specification with MatchersImplicits {
 
   def jobContext = new AroundOutside[Job] {
     lazy val job: Job = {
-      val user = UserDAO.store(User(None, email = "test@hungrymachine.com", firstName = "Jeff", lastName = "Simpson")).get
+      val user = UserDAO.store(User(None, email = "test@victorops.com", firstName = "Jeff", lastName = "Simpson")).get
       val app  = ApplicationDAO.store(Application(None, name = "Test", userId = user.id.get)).get
-      Job(None, user.id.get, app.id.get, "nniiiilbert", "* * * * *", List("stats_counts.deals.logins.successful"), Some("accum + [a.nil? ? 1 : 0]"), Some(60), None, status = Some(SuccessStatus))
+      Job(None, user.id.get, app.id.get, "nniiiilbert", "* * * * *", List("stats_counts.deals.logins.successful"),
+        Some("accum + [a.nil? ? 1 : 0]"), Some(60), None, status = Some(SuccessStatus), alertKeys = Some(List(VictorOpsAlertKey("ops", "12345"))))
     }
 
     def around[R : AsResult](r: => R): Result = {

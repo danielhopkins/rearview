@@ -38,7 +38,7 @@ class ApplicationsControllerSpec extends Specification with ApplicationsControll
   }
 
   def jobContext = new AroundOutside[User] {
-    lazy val user: User = UserDAO.store(User(None, email = "test@hungrymachine.com", firstName = "Jeff", lastName = "Simpson")).get
+    lazy val user: User = UserDAO.store(User(None, email = "test@victorops.com", firstName = "Jeff", lastName = "Simpson")).get
 
     def around[R : AsResult](r:  => R): Result = {
       running(application) {

@@ -39,7 +39,7 @@ class JobsControllerSpec extends Specification with JobsController { self =>
 
   def jobContext = new AroundOutside[TestContext] {
     lazy val ctx = {
-      val user = UserDAO.store(User(None, email = "test@hungrymachine.com", firstName = "Jeff", lastName = "Simpson")).get
+      val user = UserDAO.store(User(None, email = "test@victorops.com", firstName = "Jeff", lastName = "Simpson")).get
       val app  = ApplicationDAO.store(Application(None, name = "Test", userId = user.id.get)).get
       TestContext(user, app)
     }
@@ -65,17 +65,17 @@ class JobsControllerSpec extends Specification with JobsController { self =>
   }
 
   def monitorJob(appId: Long, userId: Long): JsObject = Json.obj(
-      "appId"      -> appId,
-      "userId"     -> userId,
-      "jobType"    -> "monitor",
-      "name"       -> "testMonitor",
-      "recipients" -> "test@livingsocial.com",
-      "active"     -> true,
-      "cronExpr"   -> "0 * * * * ?",
+      "appId"         -> appId,
+      "userId"        -> userId,
+      "jobType"       -> "monitor",
+      "name"          -> "testMonitor",
+      "recipients"    -> "test@victorops.com",
+      "active"        -> true,
+      "cronExpr"      -> "0 * * * * ?",
       "metrics"       -> Json.arr("stats_counts.deals.events.test"),
       "minutes"       -> 60,
       "monitorExpr"   -> "total = fold_metrics(0) { |accum, a| accum + a.value.to_f }; raise 'Outage in metric' if total == 0",
-      "errorTimeout" -> 60
+      "errorTimeout"  -> 60
     )
 
 

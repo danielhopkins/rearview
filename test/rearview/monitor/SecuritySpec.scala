@@ -81,7 +81,7 @@ class SecuritySpec extends Specification with AroundExample with FutureMatchers 
     "prevent socket connect" in {
       val monitorExpr = """
       require 'socket'
-      TCPSocket.new 'www.livingsocial.com', 80
+      TCPSocket.new 'www.twitter.com', 80
       """
       Monitor.eval(artifact, Some(monitorExpr)).status === SecurityErrorStatus
     }

@@ -56,11 +56,7 @@ define([
             // Add the event listener
             $(window).resize(resize);
             
-            self.alertKeys = new AlertKeys([
-                {id: 1, type_id: 'PagerDonkey', label: 'PagerDonkey API Key:', value: '01234567890'},
-                {id: 2, type_id: 'VictorOps', label: 'VictorOps API Key:', value: 'abcdef09876543221'},
-                {id: 3, type_id: 'Email', label: 'Email Address:', value: 'look@me.com'}                                
-            ]);
+            self.alertKeys = new AlertKeys([]);
 
             self.alertKeys.on('change add remove', self.renderAlertKeys);
 
@@ -378,9 +374,9 @@ define([
             e.preventDefault();
             var $valInput = $('#integration-value');
             var types = {
-                'email-address': 'Email Address:',
-                'pagerduty-key': 'PagerDuty API Key:',
-                'victorops-key': 'VictorOps API Key:'
+                'email': 'Email Address:',
+                'pagerduty': 'PagerDuty API Key:',
+                'victorops': 'VictorOps API Key:'
             };
             var value = $valInput.val();
             if(!value) {
@@ -392,7 +388,7 @@ define([
             }
             this.alertKeys.add(
                 {
-                    type_id: $('#integration-key').val(),
+                    type: $('#integration-key').val(),
                     value: value,
                     label: types[$('#integration-key').val()]
                 }    
@@ -504,7 +500,7 @@ define([
                 $content = '';
 
             $.ajax({
-                url     : '/help/quick.html',
+                url     : '/public/help/quick.html',
                 async   : false,
                 success : function( response ) {
                     $content = response;
