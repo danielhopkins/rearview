@@ -4,9 +4,7 @@ import com.typesafe.sbt.packager.linux.LinuxPackageMapping
 
 name := "rearview"
 
-version := "2.0.0"
-
-packagerSettings
+version := "2.1.0"
 
 maintainer in Debian:= "Jeff Simpson <jeff@victorops.com>"
 
