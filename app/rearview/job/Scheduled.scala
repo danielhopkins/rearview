@@ -85,7 +85,7 @@ trait Scheduled {
 
 
   /**
-   * Handles sending the pagerduty and/or emails.
+   * Handles sending alerts to defined alerting clients.
    * @param job
    * @param status
    * @param result

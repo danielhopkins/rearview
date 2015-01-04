@@ -16,7 +16,7 @@ import rearview.model.ModelImplicits._
 import rearview.util.Utils
 
 trait PagerDutyAlert extends Alert {
-  def client: PagerDutyHttpClient
+  def client: VictorOpsHttpClient
 
   /**
    * Implement logic to filter for pager duty keys and send over http client
@@ -75,7 +75,7 @@ trait PagerDutyAlert extends Alert {
 
       val msg = JsObject(payload.fields.filterNot(_._1 == "details"))
       Logger.info("Posting PagerDuty trigger: " + msg)
-      client.post(Global.pagerDutyUri, payload)
+      Global.pagerDutyUri.map( client.post(_, payload))
     }
   }
 }
@@ -89,7 +89,7 @@ trait PagerDutyHttpClient {
 class LivePagerDutyAlert extends PagerDutyAlert {
   Logger.info("PagerDuty alerts are enabled")
 
-  val client = new PagerDutyHttpClient {
+  val client = new VictorOpsHttpClient {
     def post(uri: String, payload: JsValue): Future[Boolean] = {
       Logger.debug(s"Posting PagerDuty to $uri")
       WS.url(uri).post(payload) map { r =>

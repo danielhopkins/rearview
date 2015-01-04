@@ -13,7 +13,7 @@ import play.api.test.Helpers._
 import play.api.test.{FakeApplication, FakeHeaders, FakeRequest}
 import rearview.Global.database
 import rearview.Global.slickDriver.simple._
-import rearview.alert.{EmailAlert, EmailClient, PagerDutyAlert, PagerDutyHttpClient}
+import rearview.alert.{EmailAlert, EmailClient, PagerDutyAlert, VictorOpsHttpClient}
 import rearview.controller.JobsController
 import rearview.dao.{ApplicationDAO, JobDAO, UserDAO}
 import rearview.graphite.{GraphiteResponse, MockGraphiteClient}
@@ -40,7 +40,7 @@ class SchedulerSpec extends Specification with FutureMatchers with JobsControlle
   lazy val graphiteClient = new MockGraphiteClient(GraphiteResponse(200, payload.getBytes()))
 
   lazy val pagerDutyAlert = new PagerDutyAlert {
-    val client = new PagerDutyHttpClient {
+    val client = new VictorOpsHttpClient {
       def post(uri: String, payload: JsValue): Future[Boolean] = {
         pagerDutyResult send payload
         Future.successful(true)
