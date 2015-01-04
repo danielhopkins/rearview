@@ -4,8 +4,7 @@ import org.apache.commons.mail.SimpleEmail
 import play.api.Logger
 import rearview.Global
 import scala.util.control.Exception._
-import rearview.model.AnalysisResult
-import rearview.model.Job
+import rearview.model.{AlertKey, EmailAlertKey, AnalysisResult, Job}
 import java.text.SimpleDateFormat
 import java.util.TimeZone
 import java.util.Date
@@ -19,17 +18,19 @@ trait EmailAlert extends Alert {
    * Implement logic to filter for pager duty keys and send over http client
    */
   def send(job: Job, result: AnalysisResult) {
-//    job.id map { jobId =>
-//      val (subject, payload) = emailPayload(job, result)
-//
-//      job.alertKeys map {
-//        _.filter { key =>
-//          Utils.isEmailAddress(key)
-//        }
-//      } foreach { recipients =>
-//        client.send(recipients, Global.emailFrom, subject, payload)
-//      }
-//    }
+    job.id map { jobId =>
+      val (subject, payload) = emailPayload(job, result)
+
+      job.alertKeys foreach { ks =>
+        val keys = ks.filter {
+          case k: EmailAlertKey => true
+          case _                => false
+        }
+
+        client.send(keys, Global.emailFrom, subject, payload)
+
+      }
+    }
   }
 
 
@@ -65,7 +66,7 @@ Direct Link: ${Utils.jobUri(job)}
  * Simple email abstraction for sending text-only email
  */
 trait EmailClient {
-  def send(recipients: Seq[String], from: String, subject: String, body: String): Boolean
+  def send(recipients: Seq[AlertKey], from: String, subject: String, body: String): Boolean
 }
 
 
@@ -73,7 +74,7 @@ class LiveEmailAlert extends EmailAlert {
   Logger.info("Email alerts are enabled")
 
   val client = new EmailClient {
-    def send(recipients: Seq[String], from: String, subject: String, body: String) = {
+    def send(recipients: Seq[AlertKey], from: String, subject: String, body: String) = {
       handling(classOf[Throwable]) by { e =>
         Logger.error("Failed to send email", e)
         false
@@ -84,7 +85,7 @@ class LiveEmailAlert extends EmailAlert {
         client.setFrom(from)
         client.setSubject(subject)
         client.setMsg(body)
-        recipients foreach(client.addTo(_))
+        recipients foreach(k => client.addTo(k.value))
         Global.emailUser foreach  { user =>
           client.setAuthentication(user, Global.emailPassword.getOrElse(""))
         }

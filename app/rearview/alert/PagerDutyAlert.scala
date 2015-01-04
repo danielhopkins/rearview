@@ -11,8 +11,7 @@ import play.api.Play.current
 import rearview.Global
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import rearview.model.AnalysisResult
-import rearview.model.Job
+import rearview.model.{AlertKey, PagerDutyAlertKey, AnalysisResult, Job}
 import rearview.model.ModelImplicits._
 import rearview.util.Utils
 
@@ -23,16 +22,17 @@ trait PagerDutyAlert extends Alert {
    * Implement logic to filter for pager duty keys and send over http client
    */
   def send(job: Job, result: AnalysisResult) {
-//    job.id map { jobId =>
-//      job.alertKeys map {
-//        _.filter { key =>
-//          !Utils.isEmailAddress(key)
-//        }
-//      } foreach { keys =>
-//        val (description, payload) = pagerDutyPayload(job, result)
-//        post(jobId.toString, keys, description, Some(payload))
-//      }
-//    }
+    job.id map { jobId =>
+      job.alertKeys map { ks =>
+        val keys = ks.filter {
+          case k: PagerDutyAlertKey => true
+          case _                    => false
+        }
+
+        val (description, payload) = pagerDutyPayload(job, result)
+        post(jobId.toString, keys, description, Some(payload))
+      }
+    }
   }
 
 
@@ -63,10 +63,10 @@ trait PagerDutyAlert extends Alert {
   /**
    * Create the payload and send to PD over http
    */
-  def post(id: String, pagerDutyKeys: List[String], description: String, results: Option[JsValue]) {
+  def post(id: String, pagerDutyKeys: List[AlertKey], description: String, results: Option[JsValue]) {
     pagerDutyKeys.foreach { key =>
       val payload = JsObject(
-        ("service_key", JsString(key)) ::
+        ("service_key", JsString(key.value)) ::
         ("event_type", JsString("trigger")) ::
         ("incident_key", JsString("rearview/" + id)) ::
         ("description", JsString(description)) ::

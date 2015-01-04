@@ -50,7 +50,7 @@ class SchedulerSpec extends Specification with FutureMatchers with JobsControlle
 
   lazy val emailAlert = new EmailAlert {
     val client = new EmailClient {
-      def send(recipients: Seq[String], from: String, subject: String, body: String) = {
+      def send(recipients: Seq[AlertKey], from: String, subject: String, body: String) = {
         emailResult send Some(body)
         true
       }
@@ -71,7 +71,6 @@ class SchedulerSpec extends Specification with FutureMatchers with JobsControlle
   lazy val emailResult     = Agent[Option[String]](None)
 
   implicit lazy val futureTimeouts: FutureTimeouts = FutureTimeouts(10, 1000L millis)
-//  implicit lazy val akkaTimeout = Timeout(scala.concurrent.duration.Duration(60, TimeUnit.SECONDS))
 
   case class TestContext(app: Application, user: User)
 
