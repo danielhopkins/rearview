@@ -103,7 +103,7 @@ define([
                     success : function(result) {
                         if (result.status === 'error') {
                             self._hideOverlay();
-                            if(_.isEmpty(result.graph_data)) {
+                            if(_.isEmpty(result.graphData)) {
                                 self._showOverlay(self.$graph, 'Monitor Error - No Data', 'small-monitor-error-overlay');
                             } else {
                                 self._showOverlay(self.$graph, 'Monitor Error', 'small-monitor-error-overlay');
@@ -111,7 +111,7 @@ define([
                             self._setErrorState();
                         } else if (result.status === 'failed') {
                             self._hideOverlay();
-                            self.formattedGraphData = self.formatGraphData( result.graph_data );
+                            self.formattedGraphData = self.formatGraphData( result.graphData );
                             self.renderGraphData(self.chart, self.formattedGraphData);
                             self._setErrorState();
                             // set the output data so when we pass the model to the expanded view
@@ -125,10 +125,10 @@ define([
                             self._hideOverlay();
                             self._showOverlay(self.$graph, 'Graphite Metrics Error', 'small-monitor-error-overlay');
                             self._setErrorState();
-                        } else if ( result.graph_data ) {
+                        } else if ( result.graphData ) {
                             self._hideOverlay();
                             self.errorState = false;
-                            self.formattedGraphData = self.formatGraphData( result.graph_data );
+                            self.formattedGraphData = self.formatGraphData( result.graphData );
                             self.renderGraphData(self.chart, self.formattedGraphData);
                             // set the output data so when we pass the model to the expanded view
                             // we already have it

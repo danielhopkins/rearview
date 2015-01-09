@@ -6,6 +6,8 @@ name := "rearview"
 
 version := "2.1.0"
 
+scalaVersion := "2.11.4"
+
 maintainer in Debian:= "Jeff Simpson <jeff@victorops.com>"
 
 packageSummary := "Monitoring framework for Graphite metrics"
@@ -25,7 +27,7 @@ libraryDependencies ++= Seq(
   "com.typesafe.slick"            %% "slick"                       % "2.1.0",
   "com.typesafe.akka"             %% "akka-agent"                  % "2.3.8",
   "com.typesafe.akka"             %% "akka-cluster"                % "2.3.8",
-  "com.typesafe.play.plugins"     %% "play-statsd"                 % "2.1.0",
+  "com.typesafe.play.plugins"     %% "play-statsd"                 % "2.3.0",
   "commons-validator"             %  "commons-validator"           % "1.4.0",
   "javolution"                    %  "javolution"                  % "5.5.1",
   "mysql"                         %  "mysql-connector-java"        % "5.1.21",

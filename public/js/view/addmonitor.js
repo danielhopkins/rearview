@@ -221,8 +221,8 @@ define([
             self._setMetrics();
 
             $.post('/monitor', JSON.stringify(self.model.toJSON()), function(result) {
-                if (result.graph_data) {
-                    var formattedGraphData = self.formatGraphData( result.graph_data );
+                if (result.graphData) {
+                    var formattedGraphData = self.formatGraphData( result.graphData );
                     self.renderGraphData(self.chart, formattedGraphData);
 
                     // set the output field from the std out response

@@ -6,10 +6,6 @@ package rearview.model
 
 import java.util.Date
 
-import play.api.libs.functional.syntax._
-import play.api.libs.json.Format._
-import play.api.libs.json.Reads._
-import play.api.libs.json.Writes._
 import play.api.libs.json._
 import rearview.monitor.Monitor
 
@@ -165,75 +161,12 @@ case class DataPoint(metric: String, timestamp: Long, value: Option[Double]) {
 object ModelImplicits {
   type TimeSeries = Seq[Seq[DataPoint]]
 
-
-  implicit val applicationFormat: Format[Application] = (
-      (__ \ "id").formatNullable[Long] ~
-      (__ \ "userId").format[Long] ~
-      (__ \ "name").format[String] ~
-      (__ \ "createdAt").formatNullable[Date] ~
-      (__ \ "modifiedAt").formatNullable[Date])(Application.apply, unlift(Application.unapply))
-
-
-  implicit val userFormat: Format[User] = (
-      (__ \ "id").formatNullable[Long] ~
-      (__ \ "email").format[String] ~
-      (__ \ "firstName").format[String] ~
-      (__ \ "lastName").format[String] ~
-      (__ \ "lastLogin").formatNullable[Date] ~
-      (__ \ "createdAt").formatNullable[Date] ~
-      (__ \ "modifiedAt").formatNullable[Date])(User.apply, unlift(User.unapply))
-
-
   implicit object JobStatusFormat extends Format[JobStatus] {
     def reads(json: JsValue) = JsSuccess(json match {
       case JsString(s) => JobStatus.unapply(s).getOrElse(sys.error(s"Unknown JobStatus: $s"))
       case j           => sys.error(s"JobStatus should be a JsString. Found ${j.getClass}")
     })
     def writes(status: JobStatus) = JsString(status.name)
-  }
-
-
-  implicit val jobErrorFormat: Format[JobError] = (
-      (__ \ "id").format[Long] ~
-      (__ \ "jobId").format[Long] ~
-      (__ \ "date").format[Date] ~
-      (__ \ "status").format[JobStatus] ~
-      (__ \ "message").formatNullable[String] ~
-      (__ \ "endDate").formatNullable[Date])(JobError.apply, unlift(JobError.unapply))
-
-
-  implicit val dataPointFormat: Format[DataPoint] = (
-      (__ \ "metric").format[String] ~
-      (__ \ "timestamp").format[Long] ~
-      (__ \ "value").formatNullable[Double])(DataPoint.apply, unlift(DataPoint.unapply))
-
-
-  def optJsArrayString(field: String): OFormat[Option[List[String]]] = new OFormat[Option[List[String]]] {
-    val origFormat = (__ \ field).formatNullable[List[String]]
-
-    def reads(json: JsValue) =
-      origFormat.reads(json) map { opt =>
-        opt map { s =>
-          s.map(_.trim).filterNot(_.isEmpty)
-        } collect {
-          case a if(!a.isEmpty) => a
-        }
-      }
-
-    def writes(o: Option[List[String]]) =
-      origFormat.writes(o)
-  }
-
-  def jsArrayString(field: String): OFormat[List[String]] = new OFormat[List[String]] {
-    val origFormat = (__ \ field).format[List[String]]
-
-    def reads(json: JsValue) =
-      origFormat.reads(json) map { ls =>
-        ls.filterNot(_.trim.isEmpty)
-      }
-
-    def writes(o: List[String]) =
-      origFormat.writes(o)
   }
 
   implicit object AlertKeyFormat extends Format[AlertKey] {
@@ -257,34 +190,19 @@ object ModelImplicits {
     }
   }
 
+  implicit val applicationFormat = Json.format[Application]
 
-  implicit val jobFormat: Format[Job] = (
-    (__ \ "id").formatNullable[Long] ~
-      (__ \ "userId").format[Long] ~
-      (__ \ "appId").format[Long] ~
-      (__ \ "name").format[String] ~
-      (__ \ "cronExpr").format[String] ~
-      jsArrayString("metrics") ~
-      (__ \ "monitorExpr").formatNullable[String] ~
-      (__ \ "minutes").formatNullable[Int] ~
-      (__ \ "toDate").formatNullable[String] ~
-      (__ \ "description").formatNullable[String] ~
-      (__ \ "active").format[Boolean] ~
-      (__ \ "status").formatNullable[JobStatus] ~
-      (__ \ "lastRun").formatNullable[Date] ~
-      (__ \ "nextRun").formatNullable[Date] ~
-      (__ \ "alertKeys").formatNullable[List[AlertKey]] ~
-      (__ \ "errorTimeout").format[Int] ~
-      (__ \ "createdAt").formatNullable[Date] ~
-      (__ \ "modifiedAt").formatNullable[Date] ~
-      (__ \ "deletedAt").formatNullable[Date])(Job.apply, unlift(Job.unapply))
+  implicit val userFormat= Json.format[User]
 
+  implicit val jobErrorFormat = Json.format[JobError]
 
-   implicit val monitorOutputWrites = (
-      (__ \ "status").write[JobStatus] ~
-      (__ \ "output").write[String] ~
-      (__ \ "graph_data").write[JsValue])(unlift(MonitorOutput.unapply))
+  implicit val jobFormat = Json.format[Job]
 
+  implicit val dataPointFormat = Json.format[DataPoint]
+
+  implicit val monitorOutputWrites = Json.format[MonitorOutput]
+
+  implicit def timeSeriesToJson(series: TimeSeries): JsValue = TimeSeriesFormat.writes(series)
 
   implicit object TimeSeriesFormat extends Format[TimeSeries] {
     def reads(json: JsValue) = json match {
@@ -304,7 +222,6 @@ object ModelImplicits {
         "minutes" -> JsNumber(job.minutes.getOrElse(Monitor.minutes).toInt)))
   }
 
-  implicit def timeSeriesToJson(series: TimeSeries): JsValue = TimeSeriesFormat.writes(series)
 }
 
 object Constants {

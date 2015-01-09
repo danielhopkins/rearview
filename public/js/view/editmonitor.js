@@ -178,8 +178,8 @@ define([
             $.ajax({
                 url   : '/jobs/' + monitorId + '/data',
                 success : function(result) {
-                    if ( result.graph_data ) {
-                        self.formattedGraphData = self.formatGraphData( result.graph_data );
+                    if ( result.graphData ) {
+                        self.formattedGraphData = self.formatGraphData( result.graphData );
                         if ( !_.isUndefined(cb) ) {
                             cb(result);
                         }
@@ -316,8 +316,8 @@ define([
                     type    : 'POST',
                     data    : JSON.stringify(model.toJSON()),
                     success : function(result) {
-                        if ( result.graph_data ) {
-                            var formattedGraphData = self.formatGraphData( result.graph_data );
+                        if ( result.graphData ) {
+                            var formattedGraphData = self.formatGraphData( result.graphData );
                             self.renderGraphData(self.chart, formattedGraphData);
                             self.$el.find('textarea.output-view').val(result.output);
                         }
