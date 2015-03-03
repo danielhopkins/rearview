@@ -2,7 +2,7 @@ package rearview.controller
 
 import play.api.Logger
 import play.api.Play.{configuration, current}
-import play.api.libs.json.JsValue
+import play.api.libs.json.{JsString, JsValue}
 import play.api.libs.json.Json.toJson
 import play.api.libs.openid.OpenID
 import play.api.mvc.Results.Redirect
@@ -41,16 +41,8 @@ trait OpenIDLogin {
   def callbackUri()(implicit request: Request[Any]): String
   def successUri()(implicit request: Request[Any]): String
 
-  def login = Action.async { implicit request =>
-    val attrs    = "email"     -> "http://axschema.org/contact/email" ::
-                   "firstName" -> "http://axschema.org/namePerson/first" ::
-                   "lastName"  -> "http://axschema.org/namePerson/last" :: Nil
-    OpenID.redirectURL(openidHost, callbackUri, attrs) map { url =>
-      Redirect(url)
-    } recover {
-      case e: Throwable =>
-        Redirect(routes.MainController.unauthorized)
-    }
+  def login = Action { implicit request =>
+    Redirect(successUri).withSession(defaultUsername -> "blacklist@victorops.com", MainController.USER -> "No user")
   }
 
   def loginCallback = Action.async { implicit request =>
