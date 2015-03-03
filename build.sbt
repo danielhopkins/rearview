@@ -20,6 +20,8 @@ unmanagedResourceDirectories in Assets += baseDirectory.value / "public2"
 
 unmanagedResourceDirectories in Compile += new File("src/main/resources")
 
+scalacOptions += "-target:jvm-1.7"
+
 unmanagedSourceDirectories in Compile += new File("src/main/resources")
 
 libraryDependencies ++= Seq(
